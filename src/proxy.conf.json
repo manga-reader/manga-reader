@@ -1,0 +1,7 @@
+{
+  "/online": {
+    "target": "https://www.comicabc.com/",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

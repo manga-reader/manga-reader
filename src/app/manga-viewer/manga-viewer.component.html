@@ -1,0 +1,25 @@
+<div class="card py-2">
+  <div class="card-container">
+    <div class="block text-center">
+      <img class="right-auto" src="{{currentPic}}" alt="">
+    </div>
+    <div class="flex justify-content-center flex-wrap card-container my-2">
+      <div class="flex align-items-center justify-content-center mx-4">
+        <p-button label="前一章" (click)="previousVol()"></p-button>
+      </div>
+      <div class="flex align-items-center justify-content-center mx-4">
+        <p-button label="前一頁" (click)="previousPage()"></p-button>
+      </div>
+      <div class="flex align-items-center justify-content-center mx-4">
+        <p-dropdown [options]="pages" [(ngModel)]="page" (onChange)="jumpPage()"></p-dropdown>
+      </div>
+      <div class="flex align-items-center justify-content-center mx-4">
+        <p-button label="下一頁" (click)="nextPage()"></p-button>
+      </div>
+      <div class="flex align-items-center justify-content-center mx-4">
+        <p-button label="下一章" (click)="nextVol()"></p-button>
+      </div>
+    </div>
+  </div>
+</div>
+
