@@ -1,4 +1,4 @@
-import { MangaPictureParserService } from './manga-picture-parser.service';
+import { MangaImageParserService } from './manga-image-parser.service';
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
@@ -13,15 +13,16 @@ export class MangaViewerComponent implements OnInit {
   page: any = 0;
   vol = 0;
   pages: any[] = [];
-  currentPic = "";
+  currentImg = "";
 
   constructor(
-    private mangaPictureParserService: MangaPictureParserService
+    private mangaImageParserService: MangaImageParserService
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.currentComic = await this.mangaPictureParserService.getHtmlPic("10406", "1-1")
-    this.currentPic = this.currentComic[0].Urls[0];
+    let comicId = "10406";    // change comid id here
+    this.currentComic = await this.mangaImageParserService.getHtmlImg(comicId, "1-1");
+    this.currentImg = this.currentComic[0].Urls[0];
     this.getPages(this.currentComic[0].Urls.length);
   }
 
@@ -68,6 +69,6 @@ export class MangaViewerComponent implements OnInit {
   }
 
   jumpPage() {
-    this.currentPic = this.currentComic[this.vol].Urls[this.page];
+    this.currentImg = this.currentComic[this.vol].Urls[this.page];
   }
 }
