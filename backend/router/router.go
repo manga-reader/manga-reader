@@ -5,10 +5,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
+	"github.com/manga-reader/manga-reader/backend/router/handler/process"
 )
 
 type Params struct {
+	Database *database.Database
 }
 
 type Options struct {
@@ -36,7 +39,12 @@ func SetupRouter(params *Params, opts *Options) *gin.Engine {
 
 	healthRoute := r.Group("/health")
 	{
-		healthRoute.GET("/ping", health.PerformHealthCheck)
+		healthRoute.GET("/ping", health.HealthPing)
+	}
+
+	processRoute := r.Group("/process")
+	{
+		processRoute.GET("/save/:vol/:page", process.ProcessSave)
 	}
 
 	return r
