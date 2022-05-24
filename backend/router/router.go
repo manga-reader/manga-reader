@@ -8,17 +8,15 @@ import (
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
 	"github.com/manga-reader/manga-reader/backend/router/handler/process"
+	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 )
 
 type Params struct {
 	Database *database.Database
 }
 
-type Options struct {
-}
-
 // SetupRouter Create a new router object
-func SetupRouter(params *Params, opts *Options) *gin.Engine {
+func SetupRouter(params *Params) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.Use(gin.Recovery())
@@ -40,6 +38,11 @@ func SetupRouter(params *Params, opts *Options) *gin.Engine {
 	healthRoute := r.Group("/health")
 	{
 		healthRoute.GET("/ping", health.HealthPing)
+	}
+
+	userRoute := r.Group("/user")
+	{
+		userRoute.GET("/login", user.UserLogin)
 	}
 
 	processRoute := r.Group("/process")

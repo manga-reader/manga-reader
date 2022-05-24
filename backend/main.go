@@ -13,7 +13,6 @@ func main() {
 		&router.Params{
 			Database: db,
 		},
-		&router.Options{},
 	)
 	logrus.Info("START LISTENING...")
 	r.Run("localhost:6699")
