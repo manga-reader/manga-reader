@@ -8,7 +8,7 @@ import (
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
 	"github.com/manga-reader/manga-reader/backend/router/handler/process"
-	"github.com/manga-reader/manga-reader/backend/router/handler/user"
+	reader "github.com/manga-reader/manga-reader/backend/router/handler/user"
 )
 
 type Params struct {
@@ -42,13 +42,27 @@ func SetupRouter(params *Params) *gin.Engine {
 
 	userRoute := r.Group("/user")
 	{
-		userRoute.GET("/login", user.UserLogin)
+		userRoute.GET("/login", reader.UserLogin)
 	}
 
-	processRoute := r.Group("/process")
+	processRoute := r.Group("/process").Use(middlewareCheckJWTToken)
 	{
-		processRoute.GET("/save/:vol/:page", process.ProcessSave)
+		processRoute.GET("/save/:comic_id/:vol/:page", process.ProcessSave(params.Database))
+		processRoute.GET("/load/:comic_id", process.ProcessLoad(params.Database))
 	}
 
 	return r
+}
+
+func middlewareCheckJWTToken(c *gin.Context) {
+	if checkJWTToken() {
+		c.Next()
+	}
+
+	c.Abort()
+	c.JSON(200, gin.H{"msg": "jwt token is not valid"})
+}
+
+func checkJWTToken() bool {
+	return true
 }

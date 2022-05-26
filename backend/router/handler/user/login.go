@@ -1,30 +1,18 @@
-package user
+package reader
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/manga-reader/manga-reader/backend/auth"
 )
 
 type UserLoginRes struct {
 	Token string `json:"token,omitempty"`
 }
 
-type JWTTokenClaims struct {
-	jwt.StandardClaims
-	UserID string `json:"id,omitempty"`
-	// ExpiredAt time.Time `json:"expired_at,omitempty"`
-}
-
 func UserLogin(c *gin.Context) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTTokenClaims{
-		UserID: c.Param("id"),
-	})
-
-	var hmacSampleSecret []byte
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString(hmacSampleSecret)
+	tokenString, err := auth.GenerateNewToken(c.Param("id"))
 	if err != nil {
 		panic(err)
 	}
