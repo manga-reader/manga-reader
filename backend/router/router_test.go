@@ -2,6 +2,7 @@ package router_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,8 +11,10 @@ import (
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
+	"github.com/manga-reader/manga-reader/backend/router/handler/process"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_HealthPing(t *testing.T) {
@@ -46,26 +49,42 @@ func Test_UserLogin(t *testing.T) {
 	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
 }
 
-func Test_ProcessSave(t *testing.T) {
+func Test_ProcessSaveAndLoad(t *testing.T) {
 	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
 	router := router.SetupRouter(
 		&router.Params{db},
 	)
 
-	w := httptest.NewRecorder()
+	wSave := httptest.NewRecorder()
 	comicID := "7"
 	vol := "10"
-	page := "3"
+	page := 3
 
-	req, _ := http.NewRequest("GET", "/process/save", nil)
-	q := req.URL.Query()
+	reqSave, _ := http.NewRequest("GET", "/process/save", nil)
+	q := reqSave.URL.Query()
 	q.Add(handler.HeaderComicID, comicID)
 	q.Add(handler.HeaderVolume, vol)
-	q.Add(handler.HeaderPage, page)
-	req.URL.RawQuery = q.Encode()
-	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
-	router.ServeHTTP(w, req)
+	q.Add(handler.HeaderPage, fmt.Sprint(page))
+	reqSave.URL.RawQuery = q.Encode()
+	reqSave.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(wSave, reqSave)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, handler.ResponseOK, w.Body.String())
+	assert.Equal(t, http.StatusOK, wSave.Code)
+	assert.Equal(t, handler.ResponseOK, wSave.Body.String())
+
+	wLoad := httptest.NewRecorder()
+	reqLoad, _ := http.NewRequest("GET", "/process/load", nil)
+	q = reqLoad.URL.Query()
+	q.Add(handler.HeaderComicID, comicID)
+	reqLoad.URL.RawQuery = q.Encode()
+	reqLoad.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(wLoad, reqLoad)
+
+	var processLoadRes process.ProcessLoadRes
+	err := json.Unmarshal(wLoad.Body.Bytes(), &processLoadRes)
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, wLoad.Code)
+	assert.Equal(t, vol, processLoadRes.Volume)
+	assert.Equal(t, page, processLoadRes.Page)
+
 }

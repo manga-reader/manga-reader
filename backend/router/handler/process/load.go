@@ -11,6 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type ProcessLoadRes struct {
+	Volume string `json:"volume,omitempty"`
+	Page   int    `json:"page,omitempty"`
+	Msg    string `json:"msg,omitempty"`
+}
+
 func ProcessLoad(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID := getProcessLoadQueryParams(c)
@@ -24,16 +30,15 @@ func ProcessLoad(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		proc, err := reader.GetReader(jwt.UserID, db).ProcessLoad(reader.Website_8comic, comicID)
+		var res ProcessLoadRes
+		res.Volume, res.Page, err = reader.GetReader(jwt.UserID, db).ProcessLoad(reader.Website_8comic, comicID)
 		if err != nil {
 			logrus.Errorf("failed to Load process: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"msg": "failed to Load process",
 			})
 		}
-		c.JSON(http.StatusOK, gin.H{
-			"page": proc,
-		})
+		c.JSON(http.StatusOK, res)
 	}
 }
 
