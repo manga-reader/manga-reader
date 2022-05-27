@@ -15,7 +15,7 @@ type UserLoginRes struct {
 
 func UserLogin(c *gin.Context) {
 	userID := getUserLoginQueryParams(c)
-	tokenString, err := auth.GenerateNewToken(userID)
+	tokenString, err := auth.GenerateJWTString(userID)
 	if err != nil {
 		logrus.Errorf("failed to generate JWT string: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{

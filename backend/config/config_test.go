@@ -14,7 +14,9 @@ func TestMarshal(t *testing.T) {
 	}`
 
 	testCfg := Configuration{
-		Timeout: Duration{time.Duration(1 * time.Minute)},
+		Connection: Connection{
+			Timeout: Duration{time.Duration(1 * time.Minute)},
+		},
 	}
 
 	var cfg Configuration

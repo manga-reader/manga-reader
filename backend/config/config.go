@@ -11,12 +11,21 @@ func init() {
 var Cfg *Configuration
 
 type Configuration struct {
-	ExportHost      string   `json:"host,omitempty"`
-	ExportPort      string   `json:"port,omitempty"`
-	Timeout         Duration `json:"timeout,omitempty"`
-	RedisServerAddr string   `json:"redis_server_address,omitempty"`
-	RedisPassword   string   `json:"redis_password,omitempty"`
-	RedisDBIndex    int      `json:"redis_db_index,omitempty"`
+	Connection Connection `json:"connection,omitempty"`
+	Redis      Redis      `json:"redis,omitempty"`
+}
+
+type Connection struct {
+	ExportHost string   `json:"host,omitempty"`
+	ExportPort string   `json:"port,omitempty"`
+	Timeout    Duration `json:"timeout,omitempty"`
+	JWTSecret  string   `json:"jwt_secret,omitempty"`
+}
+
+type Redis struct {
+	ServerAddr string `json:"server_address,omitempty"`
+	Password   string `json:"password,omitempty"`
+	DBIndex    int    `json:"db_index,omitempty"`
 }
 
 func (c *Configuration) String() string {
@@ -29,12 +38,17 @@ func (c *Configuration) String() string {
 
 func setDefaultConfig() *Configuration {
 	config := &Configuration{
-		ExportHost:      DefaultExportHost,
-		ExportPort:      DefaultExportPort,
-		Timeout:         Duration{DefaultTimeout},
-		RedisServerAddr: DefaultRedisServerAddr,
-		RedisPassword:   DefaultRedisPassword,
-		RedisDBIndex:    DefaultRedisDBIndex,
+		Connection: Connection{
+			ExportHost: DefaultExportHost,
+			ExportPort: DefaultExportPort,
+			Timeout:    Duration{DefaultTimeout},
+			JWTSecret:  DefaultJWTSecret,
+		},
+		Redis: Redis{
+			ServerAddr: DefaultRedisServerAddr,
+			Password:   DefaultRedisPassword,
+			DBIndex:    DefaultRedisDBIndex,
+		},
 	}
 
 	return config

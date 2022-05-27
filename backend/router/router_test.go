@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/manga-reader/manga-reader/backend/config"
+	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
@@ -41,12 +43,13 @@ func Test_UserLogin(t *testing.T) {
 	var res user.UserLoginRes
 	err := json.Unmarshal(w.Body.Bytes(), &res)
 	assert.NoError(t, err)
-	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.-aDZ-M5kwECjejs1jUiMcuyaKMYjAxknyObs4i4elcY", res.Token)
+	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
 }
 
 func Test_ProcessSave(t *testing.T) {
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
 	router := router.SetupRouter(
-		&router.Params{},
+		&router.Params{db},
 	)
 
 	w := httptest.NewRecorder()
@@ -60,7 +63,7 @@ func Test_ProcessSave(t *testing.T) {
 	q.Add(handler.HeaderVolume, vol)
 	q.Add(handler.HeaderPage, page)
 	req.URL.RawQuery = q.Encode()
-	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.-aDZ-M5kwECjejs1jUiMcuyaKMYjAxknyObs4i4elcY")
+	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)

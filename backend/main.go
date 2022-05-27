@@ -37,9 +37,9 @@ func main() {
 	}
 
 	db := database.Connect(
-		config.Cfg.RedisServerAddr,
-		config.Cfg.RedisPassword,
-		config.Cfg.RedisDBIndex,
+		config.Cfg.Redis.ServerAddr,
+		config.Cfg.Redis.Password,
+		config.Cfg.Redis.DBIndex,
 	)
 	if db == nil {
 		logrus.Fatal("failed to init db")
@@ -51,5 +51,5 @@ func main() {
 		},
 	)
 	logrus.Info("START LISTENING...")
-	r.Run(fmt.Sprintf("%s:%s", config.Cfg.ExportHost, config.Cfg.ExportPort))
+	r.Run(fmt.Sprintf("%s:%s", config.Cfg.Connection.ExportHost, config.Cfg.Connection.ExportPort))
 }
