@@ -1,0 +1,9 @@
+{
+	"host": "/fake/host",
+	"port": "6699",
+	"timeout": "2m",
+	"jwt_secret": "this tis test secret",
+	"server_address": "/redis/host:123",
+	"password": "",
+	"db_index": 0
+}
