@@ -30,7 +30,7 @@ func EncodeJWT(id string) (string, error) {
 	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString(jwtHMACSecret)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to sign jwt token: %w", err)
 	}
 
 	return tokenString, nil
