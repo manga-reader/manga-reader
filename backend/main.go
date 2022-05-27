@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/manga-reader/manga-reader/backend/config"
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
 	"github.com/sirupsen/logrus"
@@ -30,7 +31,19 @@ func init() {
 }
 
 func main() {
-	db := database.Connect()
+	err := config.LoadConfiguration("./config.json")
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	db := database.Connect(
+		config.Cfg.RedisServerAddr,
+		config.Cfg.RedisPassword,
+		config.Cfg.RedisDBIndex,
+	)
+	if db == nil {
+		logrus.Fatal("failed to init db")
+	}
 
 	r := router.SetupRouter(
 		&router.Params{
@@ -38,5 +51,5 @@ func main() {
 		},
 	)
 	logrus.Info("START LISTENING...")
-	r.Run("localhost:6699")
+	r.Run(fmt.Sprintf("%s:%s", config.Cfg.ExportHost, config.Cfg.ExportPort))
 }
