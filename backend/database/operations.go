@@ -10,5 +10,5 @@ func (d *Database) Set(key, val string) error {
 }
 
 func (d *Database) Get(key string) (string, error) {
-	return d.client.Get(context.TODO(), key).Result()
+	return d.client.Get(context.Background(), key).Result()
 }
