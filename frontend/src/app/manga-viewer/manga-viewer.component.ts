@@ -1,6 +1,5 @@
-import { MangaImageParserService } from './manga-image-parser.service';
+import { MangaImageParserService } from './shared/manga-image-parser.service';
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-manga-viewer',
