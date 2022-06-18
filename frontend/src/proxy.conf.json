@@ -3,5 +3,10 @@
     "target": "https://www.comicabc.com/",
     "secure": false,
     "changeOrigin": true
+  },
+  "/search": {
+    "target": "https://comicabc.com/member",
+    "secure": false,
+    "changeOrigin": true
   }
 }

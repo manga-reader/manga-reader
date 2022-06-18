@@ -1,5 +1,6 @@
 import { MangaImageParserService } from './shared/manga-image-parser.service';
 import { Component, OnInit } from '@angular/core';
+import { MangaService } from '../shared/services/manga.service';
 
 @Component({
   selector: 'app-manga-viewer',
@@ -15,7 +16,8 @@ export class MangaViewerComponent implements OnInit {
   currentImg = "";
 
   constructor(
-    private mangaImageParserService: MangaImageParserService
+    private mangaImageParserService: MangaImageParserService,
+    private mangaService: MangaService
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -23,6 +25,7 @@ export class MangaViewerComponent implements OnInit {
     this.currentComic = await this.mangaImageParserService.getHtmlImg(comicId, "1-1");
     this.currentImg = this.currentComic[0].Urls[0];
     this.getPages(this.currentComic[0].Urls.length);
+    this.mangaService.search("咒術");
   }
 
   previousPage() {

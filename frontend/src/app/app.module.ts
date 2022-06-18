@@ -10,11 +10,13 @@ import { ButtonModule } from 'primeng/button'
 import { CardModule } from 'primeng/card';
 import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
+import { MyFavoriteComponent } from './my-favorite/my-favorite.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MangaViewerComponent
+    MangaViewerComponent,
+    MyFavoriteComponent
   ],
   imports: [
     BrowserModule,
