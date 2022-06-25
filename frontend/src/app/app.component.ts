@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { PrimeNGConfig } from 'primeng/api';
+import { MenuItem, PrimeNGConfig } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
@@ -7,9 +7,23 @@ import { PrimeNGConfig } from 'primeng/api';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+
+  items: MenuItem[] = [];
+  search = '';
+
   constructor(private primengConfig: PrimeNGConfig) {}
 
   ngOnInit() {
       this.primengConfig.ripple = true;
+      this.items = [
+        {
+            label: 'My Favorite',
+            icon: 'pi pi-bookmark',
+        },
+        {
+            label: 'Latest Update',
+            icon: 'pi pi-arrow-circle-up',
+        }
+    ];
   }
 }
