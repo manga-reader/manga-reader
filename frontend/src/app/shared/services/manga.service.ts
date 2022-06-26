@@ -36,15 +36,18 @@ export class MangaService {
     return mangaDetail;
   }
 
+  async getLatestUpdate(page: number): Promise<Manga[]> {
+    const url = `http://localhost:4200/comic/u-${page}.html`;
+    const html = await this.getHtml(url);
+    return this.parseManga(html);
+  }
+
   async search(keyword: string): Promise<Manga[]> {
     const url = "http://localhost:4200/search.aspx"
     let params = new HttpParams();
     params = params.append("key", keyword);
     const html = await firstValueFrom(this.http.get(url, {params, responseType: "text"}));
-    console.log(html);
-    const parse = this.parseManga(html);
-    console.log(parse);
-    return [];
+    return this.parseManga(html);
   }
 
   parseManga(html: string): Manga[] {

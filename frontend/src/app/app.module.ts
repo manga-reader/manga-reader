@@ -14,13 +14,15 @@ import { MyFavoriteComponent } from './my-favorite/my-favorite.component';
 import { DetailComponent } from './detail/detail.component';
 import { MenubarModule } from 'primeng/menubar';
 import { InputTextModule } from 'primeng/inputtext';
+import { MangaListComponent } from './manga-list/manga-list.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MangaViewerComponent,
     MyFavoriteComponent,
-    DetailComponent
+    DetailComponent,
+    MangaListComponent
   ],
   imports: [
     BrowserModule,
