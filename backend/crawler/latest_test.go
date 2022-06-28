@@ -8,7 +8,8 @@ import (
 )
 
 func Test_GetPageLatestVolume(t *testing.T) {
-	latestVol, err := crawler.GetPageLatestVolume("https://www.comicabc.com/html/131.html")
+	comicID := "131"
+	latestVol, err := crawler.GetPageLatestVolume(comicID)
 	assert.NoError(t, err)
 	assert.Equal(t, "108話", latestVol)
 }

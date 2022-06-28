@@ -7,7 +7,8 @@ import (
 	"strings"
 )
 
-func GetPageLatestVolume(url string) (string, error) {
+func GetPageLatestVolume(id string) (string, error) {
+	url := fmt.Sprintf("https://www.comicabc.com/html/%s.html", id)
 	latestChapterTag := "id=lch>"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
