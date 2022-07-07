@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MenuItem, PrimeNGConfig } from 'primeng/api';
-import { Manga } from './shared/models/manga.model';
+import { MangaList } from './shared/models/manga-list.model';
 import { MangaService } from './shared/services/manga.service';
 
 @Component({
@@ -11,13 +11,19 @@ import { MangaService } from './shared/services/manga.service';
 export class AppComponent implements OnInit {
 
   items: MenuItem[] = [];
-  mangaList: Manga[] = [];
+  mangaList: MangaList;
   keyword = '';
+  currentPage = 1;
 
   constructor(
     private mangaService: MangaService,
     private primengConfig: PrimeNGConfig
-  ) {}
+  ) {
+    this.mangaList = {
+      manga: [],
+      pager: [],
+    }
+  }
 
   ngOnInit() {
       this.primengConfig.ripple = true;
@@ -26,14 +32,14 @@ export class AppComponent implements OnInit {
             label: 'My Favorite',
             icon: 'pi pi-bookmark',
             command: () => {
-              this.mangaList = [];
             },
         },
         {
             label: 'Latest Update',
             icon: 'pi pi-arrow-circle-up',
             command: async () => {
-              this.mangaList = await this.mangaService.getLatestUpdate(1);
+              this.mangaList = await this.mangaService.getLatestUpdate(this.currentPage);
+              this.currentPage = 1;
             },
         }
     ];
@@ -41,5 +47,10 @@ export class AppComponent implements OnInit {
 
   async searchClick() {
     this.mangaList = await this.mangaService.search(this.keyword);
+    this.currentPage = 1;
+  }
+
+  changePage(page: any) {
+    this.currentPage = page;
   }
 }
