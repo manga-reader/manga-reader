@@ -2,7 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { MangaDetail } from '../models/manga-detail.model';
-import { Manga } from '../models/manga.model';
+import { MangaList } from '../models/manga-list.model';
+import { Pager } from '../models/pager.model';
 
 @Injectable({
   providedIn: 'root'
@@ -36,22 +37,22 @@ export class MangaService {
     return mangaDetail;
   }
 
-  async getLatestUpdate(page: number): Promise<Manga[]> {
+  async getLatestUpdate(page: number): Promise<MangaList> {
     const url = `http://localhost:4200/comic/u-${page}.html`;
     const html = await this.getHtml(url);
-    return this.parseManga(html);
+    return this.parseMangaList(html);
   }
 
-  async search(keyword: string): Promise<Manga[]> {
+  async search(keyword: string): Promise<MangaList> {
     const url = "http://localhost:4200/search.aspx"
     let params = new HttpParams();
     params = params.append("key", keyword);
     const html = await firstValueFrom(this.http.get(url, {params, responseType: "text"}));
-    return this.parseManga(html);
+    return this.parseMangaList(html);
   }
 
-  parseManga(html: string): Manga[] {
-    const result = html.split("<div class=\"cat2_list text-center mb-4\">")
+  parseMangaList(html: string): MangaList {
+    let result = html.split("<div class=\"cat2_list text-center mb-4\">")
     result.shift();
     const manga = result.map(x => {
       let title = x.split("<span>")[1].split("</span>")[0];
@@ -67,6 +68,28 @@ export class MangaService {
       }
     })
 
-    return manga;
+    let pager: Pager[] = [];
+    if (html.includes('_pager">')) {
+      result = html.split('_pager">')[1].split('</div>')[0].split('document.location.href=\'');
+      result.shift();
+      pager = result.map(x => {
+        const url = x.split('\'">')[0];
+        let page = x.split('\'">')[1].split('</li>')[0];
+        if (html.includes('search_pager')) {
+          if (page.includes('pageractive')) {
+            page = page.split('pageractive">')[1].split('</a>')[0];
+          }
+        } else {
+          page = page.replace('<font color="">', '').replace('</font>', '')
+        }
+
+        return {
+          page,
+          url,
+        }
+      })
+    }
+
+    return {manga, pager};
   }
 }

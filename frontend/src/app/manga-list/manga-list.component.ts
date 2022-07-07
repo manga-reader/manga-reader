@@ -1,5 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MangaList } from '../shared/models/manga-list.model';
 import { Manga } from '../shared/models/manga.model';
+import { Pager } from '../shared/models/pager.model';
 
 @Component({
   selector: 'app-manga-list',
@@ -8,11 +10,20 @@ import { Manga } from '../shared/models/manga.model';
 })
 export class MangaListComponent implements OnInit {
 
-  @Input() mangaList: Manga[] = [];
+  @Input() mangaList: MangaList;
+  @Output() changePageEvent = new EventEmitter<string>();
 
-  constructor() { }
+  constructor() {
+    this.mangaList = {
+      manga: [],
+      pager: [],
+    }
+  }
 
   ngOnInit(): void {
   }
 
+  changePage(page: string): void {
+    this.changePageEvent.emit(page);
+  }
 }
