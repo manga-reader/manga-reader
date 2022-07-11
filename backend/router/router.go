@@ -43,7 +43,7 @@ func SetupRouter(params *Params) *gin.Engine {
 	userRoute := r.Group("/user")
 	{
 		userRoute.GET("/login", user.UserLogin)
-		userRoute.GET("/favorite", user.UserLogin)
+		userRoute.GET("/favorite", user.UserFavorite(params.Database))
 	}
 
 	recordRoute := r.Group("/record").Use(middlewareCheckJWTToken)
