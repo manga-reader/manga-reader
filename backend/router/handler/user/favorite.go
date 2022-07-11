@@ -23,7 +23,7 @@ func UserFavorite(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		list, err := reader.GetReader(jwt.UserID, db).GetFavoriteList()
+		list, err := reader.GetReader(jwt.UserID, db).GetFavoriteList(db)
 		if err != nil {
 			logrus.Errorf("failed to get user favorite: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
