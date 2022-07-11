@@ -1,4 +1,4 @@
-package process
+package record
 
 import (
 	"net/http"
@@ -11,9 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func ProcessSave(db *database.Database) gin.HandlerFunc {
+func RecordSave(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID, vol, page := getProcessSaveQueryParams(c)
+		comicID, vol, page := getRecordSaveQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
@@ -25,18 +25,18 @@ func ProcessSave(db *database.Database) gin.HandlerFunc {
 		}
 
 		r := reader.GetReader(jwt.UserID, db)
-		err = r.ProcessSave(reader.Website_8comic, comicID, vol, page)
+		err = r.RecordSave(reader.Website_8comic, comicID, vol, page)
 		if err != nil {
-			logrus.Errorf("failed to save process: %v", err)
+			logrus.Errorf("failed to save record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to save process",
+				"msg": "failed to save record",
 			})
 		}
 		c.String(http.StatusOK, handler.ResponseOK)
 	}
 }
 
-func getProcessSaveQueryParams(c *gin.Context) (string, string, string) {
+func getRecordSaveQueryParams(c *gin.Context) (string, string, string) {
 	if c.Query(handler.HeaderComicID) == "" {
 		logrus.Errorf("comic id is not given")
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "comic id is not given"})

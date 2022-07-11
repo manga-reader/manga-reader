@@ -11,7 +11,7 @@ import (
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
-	"github.com/manga-reader/manga-reader/backend/router/handler/process"
+	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -49,7 +49,7 @@ func Test_UserLogin(t *testing.T) {
 	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
 }
 
-func Test_ProcessSaveAndLoad(t *testing.T) {
+func Test_recordSaveAndLoad(t *testing.T) {
 	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
 	router := router.SetupRouter(
 		&router.Params{db},
@@ -60,7 +60,7 @@ func Test_ProcessSaveAndLoad(t *testing.T) {
 	vol := "10"
 	page := 3
 
-	reqSave, _ := http.NewRequest("GET", "/process/save", nil)
+	reqSave, _ := http.NewRequest("GET", "/record/save", nil)
 	q := reqSave.URL.Query()
 	q.Add(handler.HeaderComicID, comicID)
 	q.Add(handler.HeaderVolume, vol)
@@ -73,18 +73,18 @@ func Test_ProcessSaveAndLoad(t *testing.T) {
 	assert.Equal(t, handler.ResponseOK, wSave.Body.String())
 
 	wLoad := httptest.NewRecorder()
-	reqLoad, _ := http.NewRequest("GET", "/process/load", nil)
+	reqLoad, _ := http.NewRequest("GET", "/record/load", nil)
 	q = reqLoad.URL.Query()
 	q.Add(handler.HeaderComicID, comicID)
 	reqLoad.URL.RawQuery = q.Encode()
 	reqLoad.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(wLoad, reqLoad)
 
-	var processLoadRes process.ProcessLoadRes
-	err := json.Unmarshal(wLoad.Body.Bytes(), &processLoadRes)
+	var recordLoadRes record.RecordLoadRes
+	err := json.Unmarshal(wLoad.Body.Bytes(), &recordLoadRes)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, wLoad.Code)
-	assert.Equal(t, vol, processLoadRes.Volume)
-	assert.Equal(t, page, processLoadRes.Page)
+	assert.Equal(t, vol, recordLoadRes.Volume)
+	assert.Equal(t, page, recordLoadRes.Page)
 
 }

@@ -1,4 +1,4 @@
-package process
+package record
 
 import (
 	"net/http"
@@ -11,15 +11,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type ProcessLoadRes struct {
+type RecordLoadRes struct {
 	Volume string `json:"volume,omitempty"`
 	Page   int    `json:"page,omitempty"`
 	Msg    string `json:"msg,omitempty"`
 }
 
-func ProcessLoad(db *database.Database) gin.HandlerFunc {
+func RecordLoad(db *database.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID := getProcessLoadQueryParams(c)
+		comicID := getRecordLoadQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
@@ -30,19 +30,19 @@ func ProcessLoad(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		var res ProcessLoadRes
-		res.Volume, res.Page, err = reader.GetReader(jwt.UserID, db).ProcessLoad(reader.Website_8comic, comicID)
+		var res RecordLoadRes
+		res.Volume, res.Page, err = reader.GetReader(jwt.UserID, db).RecordLoad(reader.Website_8comic, comicID)
 		if err != nil {
-			logrus.Errorf("failed to Load process: %v", err)
+			logrus.Errorf("failed to Load record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to Load process",
+				"msg": "failed to Load record",
 			})
 		}
 		c.JSON(http.StatusOK, res)
 	}
 }
 
-func getProcessLoadQueryParams(c *gin.Context) string {
+func getRecordLoadQueryParams(c *gin.Context) string {
 	if c.Query(handler.HeaderComicID) == "" {
 		logrus.Errorf("comic id is not given")
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "comic id is not given"})

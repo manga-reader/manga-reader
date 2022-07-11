@@ -7,7 +7,7 @@ import (
 
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
-	"github.com/manga-reader/manga-reader/backend/router/handler/process"
+	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 )
 
@@ -43,12 +43,13 @@ func SetupRouter(params *Params) *gin.Engine {
 	userRoute := r.Group("/user")
 	{
 		userRoute.GET("/login", user.UserLogin)
+		userRoute.GET("/favorite", user.UserLogin)
 	}
 
-	processRoute := r.Group("/process").Use(middlewareCheckJWTToken)
+	recordRoute := r.Group("/record").Use(middlewareCheckJWTToken)
 	{
-		processRoute.GET("/save", process.ProcessSave(params.Database))
-		processRoute.GET("/load", process.ProcessLoad(params.Database))
+		recordRoute.GET("/save", record.RecordSave(params.Database))
+		recordRoute.GET("/load", record.RecordLoad(params.Database))
 	}
 
 	return r
