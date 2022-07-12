@@ -6,5 +6,5 @@
     </div>
   </p-menubar>
   <app-manga-list [mangaList]="mangaList" (changePageEvent)="changePage($event)"></app-manga-list>
-  <app-detail></app-detail>
+  <router-outlet></router-outlet>
 </div>

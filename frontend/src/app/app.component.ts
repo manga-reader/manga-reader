@@ -50,7 +50,8 @@ export class AppComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  changePage(page: any) {
+  async changePage(page: any) {
     this.currentPage = page;
+    this.mangaList = await this.mangaService.getLatestUpdate(this.currentPage);
   }
 }

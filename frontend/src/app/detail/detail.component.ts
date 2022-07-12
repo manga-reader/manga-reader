@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { Observable, switchMap } from 'rxjs';
 import { MangaDetail } from '../shared/models/manga-detail.model';
+import { Vol } from '../shared/models/vol.model';
 import { MangaService } from '../shared/services/manga.service';
 
 @Component({
@@ -9,20 +12,31 @@ import { MangaService } from '../shared/services/manga.service';
 })
 export class DetailComponent implements OnInit {
 
-  comicId = '7340';
-  comicPic = `https://www.comicabc.com/pics/0/${this.comicId}.jpg`
-  mangaDetail!: MangaDetail;
+  comicId!: string;
+  vols!: Vol[];
+  mangaDetail$!: Observable<MangaDetail>;
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private mangaService: MangaService
   ) { }
 
   async ngOnInit(): Promise<void> {
-    this.mangaDetail = await this.mangaService.getMangaDetail(this.comicId);
+    this.mangaDetail$ = this.route.paramMap.pipe(
+      switchMap((params: ParamMap) => {
+        this.comicId = params.get('id')!;
+        const detail = this.mangaService.getMangaDetail(this.comicId)
+        detail.then(x =>
+          this.vols = x.vols
+        );
+        return detail;
+      })
+    );
   }
 
   reverse() {
-    this.mangaDetail.vols = this.mangaDetail.vols.reverse();
+    this.vols = this.vols.reverse();
   }
 
 }

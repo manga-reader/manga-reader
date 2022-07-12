@@ -1,8 +1,12 @@
 <p-card styleClass="m-3">
   <div class="grid">
     <div class="col-2" *ngFor="let manga of mangaList.manga">
-      <img class="field block mx-auto" src="https://www.comicabc.com/pics/0/{{manga.comicId}}.jpg" alt="" [width]="150">
-      <div class="field text-center">{{ manga.title }}</div>
+      <img class="field block mx-auto" src="https://www.comicabc.com/pics/0/{{manga.comicId}}.jpg" alt="" [width]="150" (click)="gotoMangaDetail(manga.comicId)">
+      <div class="field text-center">
+        <a [routerLink]="['/detail', manga.comicId]" routerLinkActive="active" ariaCurrentWhenActive="page">
+          {{ manga.title }}
+        </a>
+      </div>
       <div class="field text-center text-sm">更新：{{ manga.updateStatus }}</div>
       <div class="field text-center text-sm">更新日期：{{ manga.updateDt }}</div>
     </div>
