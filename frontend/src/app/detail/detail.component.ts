@@ -39,4 +39,8 @@ export class DetailComponent implements OnInit {
     this.vols = this.vols.reverse();
   }
 
+  gotoViewer(vol: string) {
+    window.open(`/viewer/${this.comicId}/${vol}`);
+  }
+
 }

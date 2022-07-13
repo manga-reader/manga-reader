@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { MenuItem, PrimeNGConfig } from 'primeng/api';
 import { MangaList } from './shared/models/manga-list.model';
 import { MangaService } from './shared/services/manga.service';
@@ -16,6 +17,7 @@ export class AppComponent implements OnInit {
   currentPage = 1;
 
   constructor(
+    private router: Router,
     private mangaService: MangaService,
     private primengConfig: PrimeNGConfig
   ) {
@@ -38,6 +40,7 @@ export class AppComponent implements OnInit {
             label: 'Latest Update',
             icon: 'pi pi-arrow-circle-up',
             command: async () => {
+              this.router.navigate(['/list']);
               this.mangaList = await this.mangaService.getLatestUpdate(this.currentPage);
               this.currentPage = 1;
             },
@@ -46,6 +49,7 @@ export class AppComponent implements OnInit {
   }
 
   async searchClick() {
+    this.router.navigate(['/list']);
     this.mangaList = await this.mangaService.search(this.keyword);
     this.currentPage = 1;
   }

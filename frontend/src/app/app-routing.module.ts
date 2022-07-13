@@ -8,7 +8,10 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
 const routes: Routes = [
   { path: 'list', component: MangaListComponent },
   { path: 'detail/:id', component: DetailComponent },
-  { path: 'viewer', component: MangaViewerComponent },
+  {
+    path: 'viewer/:id/:vol',
+    component: MangaViewerComponent
+  },
   { path: '', redirectTo: '/list', pathMatch: 'full' },
   { path: '**', component: PageNotFoundComponent },
 ];

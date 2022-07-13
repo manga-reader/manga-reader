@@ -1,6 +1,6 @@
-import { MangaImageParserService } from './shared/manga-image-parser.service';
 import { Component, OnInit } from '@angular/core';
-import { MangaService } from '../shared/services/manga.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MangaImageParserService } from './shared/manga-image-parser.service';
 
 @Component({
   selector: 'app-manga-viewer',
@@ -10,22 +10,25 @@ import { MangaService } from '../shared/services/manga.service';
 export class MangaViewerComponent implements OnInit {
 
   currentComic: any[] = [];
-  page: any = 0;
-  vol = 0;
+  comicId!: string;
+  vol!: number;
+  page!: number;
   pages: any[] = [];
+  currentVol = [];
   currentImg = "";
 
   constructor(
-    private mangaImageParserService: MangaImageParserService,
-    private mangaService: MangaService
+    private route: ActivatedRoute,
+    private router: Router,
+    private mangaImageParserService: MangaImageParserService
   ) { }
 
   async ngOnInit(): Promise<void> {
-    let comicId = "10406";    // change comid id here
-    this.currentComic = await this.mangaImageParserService.getHtmlImg(comicId, "1-1");
-    this.currentImg = this.currentComic[0].Urls[0];
-    this.getPages(this.currentComic[0].Urls.length);
-    this.mangaService.search("咒術");
+    this.comicId = this.route.snapshot.paramMap.get('id')!;    // change comic id here
+    this.currentComic = await this.mangaImageParserService.getHtmlImg(this.comicId, '1-1');
+    this.vol = Number(this.route.snapshot.paramMap.get('vol')!);
+    this.page = Number(this.route.snapshot.paramMap.get('page')!);
+    this.updateVolDetail();
   }
 
   previousPage() {
@@ -36,7 +39,7 @@ export class MangaViewerComponent implements OnInit {
   }
 
   nextPage() {
-    if (this.page < this.currentComic[this.vol].Urls.length - 1) {
+    if (this.page < this.currentVol.length - 1) {
       this.page += 1;
       this.jumpPage();
     }
@@ -46,8 +49,8 @@ export class MangaViewerComponent implements OnInit {
     if (this.vol > 0) {
       this.vol -= 1;
       this.page = 0;
-      this.jumpPage();
-      this.getPages(this.currentComic[this.vol].Urls.length);
+      this.updateVolDetail();
+      this.router.navigate([`/viewer/${this.comicId}/${this.vol}`])
     }
   }
 
@@ -55,8 +58,8 @@ export class MangaViewerComponent implements OnInit {
     if (this.page < this.currentComic.length - 1) {
       this.vol += 1;
       this.page = 0;
-      this.jumpPage()
-      this.getPages(this.currentComic[this.vol].Urls.length);
+      this.updateVolDetail();
+      this.router.navigate([`/viewer/${this.comicId}/${this.vol}`])
     }
   }
 
@@ -64,13 +67,19 @@ export class MangaViewerComponent implements OnInit {
     this.pages = [];
     for (let i = 0; i < lastPage; i++) {
       this.pages.push({
-        label: i + "/" + (this.currentComic[this.vol].Urls.length - 1),
+        label: i + "/" + (lastPage - 1),
         value: i
       })
     }
   }
 
+  updateVolDetail() {
+    this.currentVol = this.currentComic.find(x => x.vol === this.vol)?.Urls;
+    this.jumpPage()
+    this.getPages(this.currentVol.length);
+  }
+
   jumpPage() {
-    this.currentImg = this.currentComic[this.vol].Urls[this.page];
+    this.currentImg = this.currentVol[this.page];
   }
 }
