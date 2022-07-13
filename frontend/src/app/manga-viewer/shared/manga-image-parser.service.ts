@@ -65,7 +65,7 @@ export class MangaImageParserService {
       for (let page = 1; page <= pages; ++page) {
         comicUrls.push(this.urlCreator(subKey, urlPrefix, itemId, vol, page));
       }
-      result.push({ Vol: this.padDigits(Number(vol), 4), Urls: comicUrls });
+      result.push({ vol, Urls: comicUrls });
     }
     return result;
   }

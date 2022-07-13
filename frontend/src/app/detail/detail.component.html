@@ -1,9 +1,10 @@
-<p-card header="{{ mangaDetail.title }}" styleClass="m-3">
-  <div class="grid">
-    <div class="col-3">
-      <img class="right-auto" src="{{comicPic}}" alt="">
-    </div>
-    <div class="col-9">
+<div *ngIf="mangaDetail$ | async as mangaDetail">
+  <p-card header="{{ mangaDetail.title }}" styleClass="m-3">
+    <div class="grid">
+      <div class="col-3">
+        <img class="right-auto" src="https://www.comicabc.com/pics/0/{{this.comicId}}.jpg" alt="" [width]="300">
+      </div>
+      <div class="col-9">
         <div class="field">作者：{{ mangaDetail.author }}</div>
         <div class="field">狀態：{{ mangaDetail.status }}</div>
         <div class="field">更新日期：{{ mangaDetail.updateDt }}</div>
@@ -17,10 +18,12 @@
           <div class="col-12">
             <button pButton pRipple type="button" label="排序" icon="pi pi-sort-alt" class="p-button-rounded p-button-secondary p-button-text" (click)="reverse()"></button>
           </div>
-          <div class="col-2" *ngFor="let vol of mangaDetail.vols">
-            <button pButton pRipple type="button" label="{{ vol.name }}" class="w-full p-button-outlined"></button>
+        <div class="col-2" *ngFor="let vol of mangaDetail?.vols">
+          <button pButton pRipple type="button" label="{{ vol.name }}" class="w-full p-button-outlined" (click)="gotoViewer(vol.vol)">
+          </button>
         </div>
       </div>
+      </div>
     </div>
-  </div>
-</p-card>
+  </p-card>
+</div>

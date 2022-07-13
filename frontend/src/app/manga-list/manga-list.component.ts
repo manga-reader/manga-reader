@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { MangaList } from '../shared/models/manga-list.model';
-import { Manga } from '../shared/models/manga.model';
-import { Pager } from '../shared/models/pager.model';
 
 @Component({
   selector: 'app-manga-list',
@@ -13,7 +12,9 @@ export class MangaListComponent implements OnInit {
   @Input() mangaList: MangaList;
   @Output() changePageEvent = new EventEmitter<string>();
 
-  constructor() {
+  constructor(
+    private router: Router
+  ) {
     this.mangaList = {
       manga: [],
       pager: [],
@@ -25,5 +26,9 @@ export class MangaListComponent implements OnInit {
 
   changePage(page: string): void {
     this.changePageEvent.emit(page);
+  }
+
+  gotoMangaDetail(comicId: string): void {
+    this.router.navigate([`/detail/${comicId}`]);
   }
 }

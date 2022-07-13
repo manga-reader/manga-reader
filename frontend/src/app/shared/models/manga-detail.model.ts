@@ -1,3 +1,5 @@
+import { Vol } from "./vol.model";
+
 export interface MangaDetail {
   title: string,
   comicId: string,
@@ -5,8 +7,5 @@ export interface MangaDetail {
   status: string,
   updateDt: string,
   description: string,
-  vols: {
-    vol: string,
-    name: string,
-  }[],
+  vols: Vol[],
 }

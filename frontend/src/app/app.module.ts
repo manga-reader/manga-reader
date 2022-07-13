@@ -15,6 +15,7 @@ import { DetailComponent } from './detail/detail.component';
 import { MenubarModule } from 'primeng/menubar';
 import { InputTextModule } from 'primeng/inputtext';
 import { MangaListComponent } from './manga-list/manga-list.component';
+import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { MangaListComponent } from './manga-list/manga-list.component';
     MangaViewerComponent,
     MyFavoriteComponent,
     DetailComponent,
-    MangaListComponent
+    MangaListComponent,
+    PageNotFoundComponent
   ],
   imports: [
     BrowserModule,
