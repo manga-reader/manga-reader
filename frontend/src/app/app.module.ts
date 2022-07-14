@@ -14,8 +14,9 @@ import { MyFavoriteComponent } from './my-favorite/my-favorite.component';
 import { DetailComponent } from './detail/detail.component';
 import { MenubarModule } from 'primeng/menubar';
 import { InputTextModule } from 'primeng/inputtext';
-import { MangaListComponent } from './manga-list/manga-list.component';
+import { MangaListComponent } from './manga/manga-list/manga-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { MangaModule } from './manga/manga.module';
 
 @NgModule({
   declarations: [
@@ -37,6 +38,7 @@ import { PageNotFoundComponent } from './page-not-found/page-not-found.component
     DropdownModule,
     MenubarModule,
     InputTextModule,
+    MangaModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

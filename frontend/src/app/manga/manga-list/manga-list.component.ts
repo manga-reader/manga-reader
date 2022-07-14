@@ -27,8 +27,4 @@ export class MangaListComponent implements OnInit {
   changePage(page: string): void {
     this.changePageEvent.emit(page);
   }
-
-  gotoMangaDetail(comicId: string): void {
-    this.router.navigate([`/detail/${comicId}`]);
-  }
 }

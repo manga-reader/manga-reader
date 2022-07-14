@@ -50,7 +50,7 @@ export class MangaViewerComponent implements OnInit {
       this.vol -= 1;
       this.page = 0;
       this.updateVolDetail();
-      this.router.navigate([`/viewer/${this.comicId}/${this.vol}`])
+      this.router.navigate(['/viewer', this.comicId, this.vol])
     }
   }
 
@@ -59,7 +59,7 @@ export class MangaViewerComponent implements OnInit {
       this.vol += 1;
       this.page = 0;
       this.updateVolDetail();
-      this.router.navigate([`/viewer/${this.comicId}/${this.vol}`])
+      this.router.navigate(['/viewer', this.comicId, this.vol])
     }
   }
 

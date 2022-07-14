@@ -6,11 +6,11 @@ import { Vol } from '../shared/models/vol.model';
 import { MangaService } from '../shared/services/manga.service';
 
 @Component({
-  selector: 'app-detail',
-  templateUrl: './detail.component.html',
-  styleUrls: ['./detail.component.css']
+  selector: 'app-manga-detail',
+  templateUrl: './manga-detail.component.html',
+  styleUrls: ['./manga-detail.component.css']
 })
-export class DetailComponent implements OnInit {
+export class MangaDetailComponent implements OnInit {
 
   comicId!: string;
   vols!: Vol[];
@@ -44,3 +44,4 @@ export class DetailComponent implements OnInit {
   }
 
 }
+
