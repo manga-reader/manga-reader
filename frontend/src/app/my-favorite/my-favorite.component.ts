@@ -1,5 +1,5 @@
-import { MangaService } from './../shared/services/manga.service';
 import { Component, OnInit } from '@angular/core';
+import { MangaService } from '../manga/shared/services/manga.service';
 
 @Component({
   selector: 'app-my-favorite',

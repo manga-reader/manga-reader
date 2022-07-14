@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem, PrimeNGConfig } from 'primeng/api';
-import { MangaList } from './shared/models/manga-list.model';
-import { MangaService } from './shared/services/manga.service';
+import { MangaList } from './manga/shared/models/manga-list.model';
+import { MangaService } from './manga/shared/services/manga.service';
 
 @Component({
   selector: 'app-root',
