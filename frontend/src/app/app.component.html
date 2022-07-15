@@ -1,9 +1,4 @@
 <div class="surface-50">
-  <p-menubar [model]="items">
-    <div class="p-inputgroup">
-      <input type="text" pInputText placeholder="Search" [(ngModel)]="keyword" />
-      <button type="button" pButton pRipple icon="pi pi-search" class="p-button-secondary" (click)="searchClick()"></button>
-    </div>
-  </p-menubar>
+  <app-menubar></app-menubar>
   <router-outlet></router-outlet>
 </div>

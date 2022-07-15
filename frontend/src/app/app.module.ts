@@ -12,12 +12,14 @@ import { MenubarModule } from 'primeng/menubar';
 import { InputTextModule } from 'primeng/inputtext';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { MangaModule } from './manga/manga.module';
+import { MenubarComponent } from './menubar/menubar.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MyFavoriteComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    MenubarComponent
   ],
   imports: [
     BrowserModule,
