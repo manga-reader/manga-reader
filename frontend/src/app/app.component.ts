@@ -12,10 +12,15 @@ import { MangaService } from './manga/shared/services/manga.service';
 export class AppComponent implements OnInit {
 
   constructor(
-    private primengConfig: PrimeNGConfig
+    private primengConfig: PrimeNGConfig,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.primengConfig.ripple = true;
+  }
+
+  menubarClick(event: any) {
+    this.router.navigate(['/list'], { state:{menubar: event} })
   }
 }
