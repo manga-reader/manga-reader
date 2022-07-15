@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { MenubarEnum } from 'src/app/shared/menubar.enum';
 import { MenubarOption } from 'src/app/shared/models/menubar-option.model';
@@ -15,7 +15,6 @@ export class MangaListComponent implements OnInit {
   mangaList: MangaList;
   currentPage = 1;
   menubar!: MenubarOption;
-  @Output() changePageEvent = new EventEmitter<string>();
 
   constructor(
     private router: Router,
