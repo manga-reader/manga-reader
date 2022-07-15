@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { MenubarEnum } from 'src/app/shared/menubar.enum';
 import { MangaDetail } from '../models/manga-detail.model';
 import { MangaList } from '../models/manga-list.model';
 import { Pager } from '../models/pager.model';
@@ -48,6 +49,28 @@ export class MangaService {
     let params = new HttpParams();
     params = params.append("key", keyword);
     const html = await firstValueFrom(this.http.get(url, {params, responseType: "text"}));
+    return this.parseMangaList(html)
+  }
+
+  async changePage(menubarEnum: MenubarEnum, pager: Pager[], page: string): Promise<MangaList> {
+    switch(menubarEnum) {
+      case MenubarEnum.LatestUpdate:
+        pager = pager.map(x => {
+          let pager = x;
+          pager.url = `/comic/${pager.url}`;
+          return pager;
+        });
+        break;
+      case MenubarEnum.Search:
+        pager = pager.map(x => {
+          let pager = x;
+          pager.url = pager.url.replace('/member', '');
+          return pager;
+        });
+        break;
+    }
+    const url = pager.find(x => x.page === page)?.url!;
+    const html = await this.getHtml(url);
     return this.parseMangaList(html);
   }
 

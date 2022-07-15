@@ -1,10 +1,4 @@
 <div class="surface-50">
-  <p-menubar [model]="items">
-    <div class="p-inputgroup">
-      <input type="text" pInputText placeholder="Search" [(ngModel)]="keyword" />
-      <button type="button" pButton pRipple icon="pi pi-search" class="p-button-secondary" (click)="searchClick()"></button>
-    </div>
-  </p-menubar>
-  <app-manga-list [mangaList]="mangaList" (changePageEvent)="changePage($event)"></app-manga-list>
+  <app-menubar (clickMenubarEvent)="menubarClick($event)"></app-menubar>
   <router-outlet></router-outlet>
 </div>
