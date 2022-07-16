@@ -15,11 +15,12 @@ type UserLoginRes struct {
 
 func UserLogin(c *gin.Context) {
 	userID := getUserLoginQueryParams(c)
+
 	tokenString, err := auth.GenerateJWTString(userID)
 	if err != nil {
 		logrus.Errorf("failed to generate JWT string: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "failed to generate JWT string",
+			"err": "failed to generate JWT string",
 		})
 	}
 
@@ -33,7 +34,7 @@ func UserLogin(c *gin.Context) {
 func getUserLoginQueryParams(c *gin.Context) string {
 	if c.Query(handler.HeaderUserID) == "" {
 		logrus.Errorf("user id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "user id is not given"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "user id is not given"})
 	}
 
 	userID := c.Query(handler.HeaderUserID)

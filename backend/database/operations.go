@@ -29,3 +29,7 @@ func (d *Database) ListIndex(key string, index int64) (string, error) {
 func (d *Database) ListPush(key string, val []string) error {
 	return d.client.LPush(context.Background(), key, val).Err()
 }
+
+func (d *Database) ListRemoveElement(key string, val string) error {
+	return d.client.LRem(context.Background(), key, 0, val).Err()
+}
