@@ -33,3 +33,7 @@ func (d *Database) ListPush(key string, val []string) error {
 func (d *Database) ListRemoveElement(key string, val string) error {
 	return d.client.LRem(context.Background(), key, 0, val).Err()
 }
+
+func (d *Database) FlushAll() error {
+	return d.client.FlushAll(context.Background()).Err()
+}

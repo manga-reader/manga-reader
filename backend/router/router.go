@@ -53,6 +53,7 @@ func SetupRouter(params *Params) *gin.Engine {
 		userRoute.GET("/favorite", user.UserGetFavorite(params.Database))
 		userRoute.POST("/favorite", user.UserAddFavorite(params.Database))
 		userRoute.DELETE("/favorite", user.UserDelFavorite(params.Database))
+		userRoute.GET("/history", user.UserGetHistory(params.Database))
 	}
 
 	recordRoute := r.Group("/record").Use(middlewareCheckJWTToken)
