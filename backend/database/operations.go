@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (d *Database) Set(key, val string) error {
+func (d *Database) Set(key string, val []byte) error {
 	return d.client.Set(context.Background(), key, val, 10*time.Second).Err()
 }
 
