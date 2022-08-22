@@ -16,7 +16,6 @@ const CREATE_FAVORITE_TABLE = `CREATE TABLE favorite (
 	id SERIAL PRIMARY KEY,
 	reader_id TEXT,
 	comic_id TEXT,
-	updated_at TIMESTAMP,
 
 	FOREIGN KEY(reader_id)
 	  REFERENCES readers(id),
@@ -26,7 +25,7 @@ const CREATE_FAVORITE_TABLE = `CREATE TABLE favorite (
 
 const CREATE_HISTORY_TABLE = `CREATE TABLE history (
 	id SERIAL PRIMARY KEY,
-	reader_id TEXT,
+	reader_id TEXT NOT NULL,
 	comic_id TEXT UNIQUE NOT NULL,
 	volume TEXT,
 	page INT,
@@ -35,5 +34,6 @@ const CREATE_HISTORY_TABLE = `CREATE TABLE history (
 	FOREIGN KEY(reader_id)
 	  REFERENCES readers(id),
 	FOREIGN KEY(comic_id)
-	  REFERENCES comics(id)
+	  REFERENCES comics(id),
+	CONSTRAINT reader_comic_constraint UNIQUE (reader_id, comic_id)
   );`

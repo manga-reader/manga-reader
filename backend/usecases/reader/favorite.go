@@ -4,14 +4,16 @@ import (
 	"fmt"
 
 	"github.com/manga-reader/manga-reader/backend/database"
+	"github.com/manga-reader/manga-reader/backend/utils"
 )
 
-func (r *Reader) GetFavoriteList(readerID string, from, to int) ([]*database.ComicInfo, error) {
+func (r *Reader) GetFavorites(from, to int) ([]*database.ComicInfo, error) {
 	q := fmt.Sprintf("SELECT comics.id, comics.name, comics.latest_volume, comics.updated_at "+
 		"FROM favorite "+
-		"INNER JOIN comics.id=favorite.comic_id "+
+		"INNER JOIN comics ON comics.id=favorite.comic_id "+
 		"WHERE favorite.reader_id='%s';",
-		readerID)
+		r.ID)
+
 	rows, err := r.db.Query(q)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query cmd: '%s': %w", q, err)
@@ -25,7 +27,7 @@ func (r *Reader) GetFavoriteList(readerID string, from, to int) ([]*database.Com
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan response of query '%s': %w", q, err)
 		}
-		comicInfos = append(comicInfos)
+		comicInfos = append(comicInfos, &comicInfo)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -35,41 +37,33 @@ func (r *Reader) GetFavoriteList(readerID string, from, to int) ([]*database.Com
 	return comicInfos, nil
 }
 
-// func (r *Reader) AddNewFavorite(db *database.Database, comicID string) error {
-// 	comicName, err := crawler.GetComicName(comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("can't get comic %s's name: %w", comicID, err)
-// 	}
+func (r *Reader) AddFavorite(comicID string) error {
+	var err error
+	q := fmt.Sprintf("SELECT id FROM comics WHERE comics.id='%s';", comicID)
+	err = r.db.IsExist(q)
+	if err != nil && err != utils.ErrNotFound {
+		return fmt.Errorf("failed to find whether a note exist: %w", err)
+	}
+	if err == utils.ErrNotFound {
+		// TODO add comics
+	}
+	cmd := fmt.Sprintf(`INSERT INTO 
+	favorite ( 
+		reader_id,
+		comic_id
+	)
+    SELECT '%s', '%s' 
+	WHERE NOT EXISTS (
+    	SELECT 1 FROM favorite WHERE favorite.reader_id='%s' AND favorite.comic_id='%s'
+	);`,
+		r.ID, comicID,
+		r.ID, comicID)
+	return r.db.Exec(cmd)
+}
 
-// 	latestVol, updatedAt, err := crawler.GetPageLatestVolumeAndDate(comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to get latest volume of comic: %v: %w", comicID, err)
-// 	}
-
-// 	err = db.ListPush(database.GetUserFavoriteKey(r.ID), []string{comicID})
-// 	if err != nil {
-// 		return fmt.Errorf("failed to add comic id: %v to user favorite list: %w", comicID, err)
-// 	}
-
-// 	info := database.ComicInfo{
-// 		ID:           comicID,
-// 		Name:         comicName,
-// 		LatestVolume: latestVol,
-// 		UpdatedAt:    *updatedAt,
-// 	}
-// 	b, err := json.Marshal(&info)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal comic info: %v to update: %w", info, err)
-// 	}
-
-// 	return db.Set(comicID, b)
-// }
-
-// func (r *Reader) DelFavorite(db *database.Database, comicID string) error {
-// 	err := db.ListRemoveElement(database.GetUserFavoriteKey(r.ID), comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to remove comic id: %s from user: %s: %w", comicID, r.ID, err)
-// 	}
-
-// 	return nil
-// }
+func (r *Reader) DelFavorite(comicID string) error {
+	cmd := fmt.Sprintf(`DELETE FROM favorite
+	WHERE favorite.reader_id='%s' AND favorite.comic_id='%s';`,
+		r.ID, comicID)
+	return r.db.Exec(cmd)
+}
