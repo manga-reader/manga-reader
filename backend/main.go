@@ -36,12 +36,14 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	db := database.Connect(
-		config.Cfg.Redis.ServerAddr,
-		config.Cfg.Redis.Password,
-		config.Cfg.Redis.DBIndex,
+	db := database.NewDatabase(
+		database.Default_Host,
+		database.Default_Port,
+		database.Default_User,
+		database.Default_Password,
+		database.Default_Dbname,
 	)
-	if db == nil {
+	if err = db.Connect(); err != nil {
 		logrus.Fatal("failed to init db")
 	}
 

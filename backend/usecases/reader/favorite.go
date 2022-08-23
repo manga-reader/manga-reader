@@ -3,6 +3,7 @@ package reader
 import (
 	"fmt"
 
+	"github.com/manga-reader/manga-reader/backend/crawler"
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/utils"
 )
@@ -45,7 +46,14 @@ func (r *Reader) AddFavorite(comicID string) error {
 		return fmt.Errorf("failed to find whether a note exist: %w", err)
 	}
 	if err == utils.ErrNotFound {
-		// TODO add comics
+		name, latestVol, updatedAt, err := crawler.GetComicInfo(comicID)
+		if err != nil && err != utils.ErrNotFound {
+			return fmt.Errorf("failed to get comic info of %s by crawler: %w", comicID, err)
+		}
+		err = r.AddComic(comicID, name, latestVol, *updatedAt)
+		if err != nil && err != utils.ErrNotFound {
+			return fmt.Errorf("failed to add comic with comic_id: %s, name: %s, latest volume: %s, updated at: %s: %w", comicID, name, latestVol, updatedAt, err)
+		}
 	}
 	cmd := fmt.Sprintf(`INSERT INTO 
 	favorite ( 
