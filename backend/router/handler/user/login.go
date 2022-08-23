@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,15 @@ type UserLoginRes struct {
 }
 
 func UserLogin(c *gin.Context) {
-	userID := getUserLoginQueryParams(c)
+	userID, err := getUserLoginQueryParams(c)
+	if err != nil {
+		err = fmt.Errorf("bad query param: %w", err)
+		logrus.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"err": err,
+		})
+		return
+	}
 
 	tokenString, err := auth.GenerateJWTString(userID)
 	if err != nil {
@@ -22,6 +31,7 @@ func UserLogin(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"err": "failed to generate JWT string",
 		})
+		return
 	}
 
 	res := &UserLoginRes{
@@ -31,12 +41,12 @@ func UserLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func getUserLoginQueryParams(c *gin.Context) string {
+func getUserLoginQueryParams(c *gin.Context) (string, error) {
 	if c.Query(handler.HeaderUserID) == "" {
-		logrus.Errorf("user id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "user id is not given"})
+		return "", fmt.Errorf("user id is not given")
+
 	}
 
 	userID := c.Query(handler.HeaderUserID)
-	return userID
+	return userID, nil
 }
