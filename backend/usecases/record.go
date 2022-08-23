@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// assume the comic element has already existed in DB
 func (u *Usecase) RecordSave(website WebsiteType, readerID, comicID, volume string, page int) error {
 	cmd := fmt.Sprintf(`INSERT INTO 
 	history (

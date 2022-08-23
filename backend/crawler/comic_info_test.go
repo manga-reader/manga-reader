@@ -14,5 +14,5 @@ func Test_GetComicInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "鋼之鏈金術師", name)
 	assert.Equal(t, "108話", latestVol)
-	assert.Equal(t, time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC), *updatedAt)
+	assert.Equal(t, time.Date(2018, time.July, 23, 0, 0, 0, 0, time.Local), *updatedAt)
 }

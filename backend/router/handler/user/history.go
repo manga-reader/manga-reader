@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/manga-reader/manga-reader/backend/auth"
+	"github.com/manga-reader/manga-reader/backend/router/auth"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
 	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"

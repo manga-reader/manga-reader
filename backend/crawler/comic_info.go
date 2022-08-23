@@ -20,6 +20,10 @@ func GetComicInfo(id string) (string, string, *time.Time, error) {
 		return "", "", nil, fmt.Errorf("failed to do request to %v: %w", url, err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", "", nil, fmt.Errorf("can't connect to website, received code: %d", resp.StatusCode)
+	}
 	html, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", "", nil, fmt.Errorf("failed to read response body: %w", err)
@@ -27,10 +31,16 @@ func GetComicInfo(id string) (string, string, *time.Time, error) {
 
 	nameTag := "<h3 class=\"item_name\" title=\""
 	nameRaws := strings.Split(string(html), nameTag)
+	if len(nameRaws) < 2 {
+		return "", "", nil, fmt.Errorf("can't parse name tag, may be not able to connect to website")
+	}
 	nameRaws = strings.Split(nameRaws[1], "\">")
 
 	latestChapterTag := "id=lch>"
 	latestChapterRaws := strings.Split(string(html), latestChapterTag)
+	if len(latestChapterRaws) < 2 {
+		return "", "", nil, fmt.Errorf("can't parse latest chapter tag, may be not able to connect to website")
+	}
 	latestChapterRaws = strings.Split(latestChapterRaws[1], "</font>")
 
 	updatedAtRaws := strings.Split(string(html), "更新：")
@@ -42,6 +52,7 @@ func GetComicInfo(id string) (string, string, *time.Time, error) {
 	if err != nil {
 		return "", "", nil, fmt.Errorf("failed to parse updated at time: %s: %w", updatedAtRaw, err)
 	}
+	fmt.Println("t: ", t)
 
 	return nameRaws[0], latestChapterRaws[0], &t, nil
 }

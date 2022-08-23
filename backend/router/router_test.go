@@ -14,10 +14,18 @@ import (
 	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 	"github.com/manga-reader/manga-reader/backend/usecases"
-	"github.com/manga-reader/manga-reader/backend/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableQuote: true,
+	})
+	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetReportCaller(true)
+}
 
 func Test_HealthPing(t *testing.T) {
 	router := router.SetupRouter(
@@ -61,17 +69,34 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	)
 	err := db.Connect()
 	require.NoError(t, err)
+	u := usecases.NewUsecase(db)
+	require.NotNil(t, u)
 	router := router.SetupRouter(
-		&router.Params{db},
+		&router.Params{u},
 	)
 
-	wSave := httptest.NewRecorder()
+	wNew := httptest.NewRecorder()
 	comicID := "7"
 	vol := "10"
+
+	reqNew, _ := http.NewRequest("GET", "/record/new", nil)
+	q := reqNew.URL.Query()
+	q.Add(handler.HeaderComicID, comicID)
+	q.Add(handler.HeaderVolume, vol)
+	reqNew.URL.RawQuery = q.Encode()
+	reqNew.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(wNew, reqNew)
+
+	assert.Equal(t, http.StatusOK, wNew.Code)
+	assert.Equal(t, handler.ResponseOK, wNew.Body.String())
+
+	wSave := httptest.NewRecorder()
+	comicID = "7"
+	vol = "11"
 	page := 3
 
 	reqSave, _ := http.NewRequest("GET", "/record/save", nil)
-	q := reqSave.URL.Query()
+	q = reqSave.URL.Query()
 	q.Add(handler.HeaderComicID, comicID)
 	q.Add(handler.HeaderVolume, vol)
 	q.Add(handler.HeaderPage, fmt.Sprint(page))
@@ -100,31 +125,47 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 
 func Test_FavoriteAddGetDel(t *testing.T) {
 	var err error
-	testIDs := []string{"3654", "131", "9337"}
 	testComicInfos := []*usecases.ComicInfo{
 		{
-			// 妖精的尾巴
 			ID:           "3654",
 			Name:         "妖精的尾巴",
 			LatestVolume: "545話 無法取代的伙伴們",
 			UpdatedAt:    time.Date(2020, time.May, 01, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			// 鋼之鏈金術師
 			ID:           "131",
 			Name:         "鋼之鏈金術師",
 			LatestVolume: "108話",
 			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			// 食戟之靈
 			ID:           "9337",
 			Name:         "食戟之靈",
 			LatestVolume: "315話",
 			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
 		},
 	}
-	testComicInfosRes := utils.ReverseComicInfoSlice(testComicInfos)
+	testComicInfosRes := []*usecases.ComicInfo{
+		{
+			ID:           "9337",
+			Name:         "食戟之靈",
+			LatestVolume: "315話",
+			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			ID:           "3654",
+			Name:         "妖精的尾巴",
+			LatestVolume: "545話 無法取代的伙伴們",
+			UpdatedAt:    time.Date(2020, time.May, 01, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			ID:           "131",
+			Name:         "鋼之鏈金術師",
+			LatestVolume: "108話",
+			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+	}
+
 	db := database.NewDatabase(
 		database.Default_Host,
 		database.Default_Port,
@@ -134,17 +175,20 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	)
 	err = db.Connect()
 	require.NoError(t, err)
-
+	u := usecases.NewUsecase(db)
+	require.NotNil(t, u)
+	_, err = u.Login("john")
+	require.NoError(t, err)
 	router := router.SetupRouter(
-		&router.Params{db},
+		&router.Params{u},
 	)
 
-	for i := range testIDs {
+	for _, info := range testComicInfos {
 		w := httptest.NewRecorder()
 		req, err := http.NewRequest("POST", "/user/favorite", nil)
 		require.NoError(t, err)
 		q := req.URL.Query()
-		q.Add(handler.HeaderComicID, testIDs[i])
+		q.Add(handler.HeaderComicID, info.ID)
 		req.URL.RawQuery = q.Encode()
 		req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 		router.ServeHTTP(w, req)
@@ -164,7 +208,7 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	req, err = http.NewRequest("DELETE", "/user/favorite", nil)
 	require.NoError(t, err)
 	q := req.URL.Query()
-	q.Add(handler.HeaderComicID, testIDs[0])
+	q.Add(handler.HeaderComicID, testComicInfosRes[0].ID)
 	req.URL.RawQuery = q.Encode()
 	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(w, req)
@@ -176,29 +220,26 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	router.ServeHTTP(w, req)
 	err = json.Unmarshal(w.Body.Bytes(), &res)
 	require.NoError(t, err)
-	for i := range res {
-		require.Equal(t, testComicInfosRes[i], res[i])
-	}
+	require.Equal(t, testComicInfosRes[1:], res)
 }
 
 func Test_HistoryGet(t *testing.T) {
-	testIDs := []string{"3654", "131", "9337"}
 	testComicInfos := []*usecases.ComicInfo{
 		{
-			// 妖精的尾巴
 			ID:           "3654",
-			LatestVolume: "540話",
-			UpdatedAt:    time.Date(2017, time.July, 23, 0, 0, 0, 0, time.UTC),
+			Name:         "妖精的尾巴",
+			LatestVolume: "545話 無法取代的伙伴們",
+			UpdatedAt:    time.Date(2020, time.May, 1, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			// 鋼之鏈金術師
 			ID:           "131",
-			LatestVolume: "20卷",
+			Name:         "鋼之鏈金術師",
+			LatestVolume: "108話",
 			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			// 食戟之靈
 			ID:           "9337",
+			Name:         "食戟之靈",
 			LatestVolume: "315話",
 			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
 		},
@@ -212,18 +253,18 @@ func Test_HistoryGet(t *testing.T) {
 	)
 	err := db.Connect()
 	require.NoError(t, err)
-	err = db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
+	u := usecases.NewUsecase(db)
+	require.NotNil(t, u)
+	reader, err := u.Login("john")
 	require.NoError(t, err)
 
-	for i := range testIDs {
-		b, err := json.Marshal(testComicInfos[i])
-		require.NoError(t, err)
-		err = db.Set(testIDs[i], b)
+	for _, comicInfo := range testComicInfos {
+		err = u.AddHistory(reader.ID, comicInfo.ID)
 		require.NoError(t, err)
 	}
 
 	router := router.SetupRouter(
-		&router.Params{db},
+		&router.Params{u},
 	)
 
 	w := httptest.NewRecorder()

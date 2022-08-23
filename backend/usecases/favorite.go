@@ -11,7 +11,8 @@ func (u *Usecase) GetFavorites(readerID string, from, to int) ([]*ComicInfo, err
 	q := fmt.Sprintf("SELECT comics.id, comics.name, comics.latest_volume, comics.updated_at "+
 		"FROM favorite "+
 		"INNER JOIN comics ON comics.id=favorite.comic_id "+
-		"WHERE favorite.reader_id='%s';",
+		"WHERE favorite.reader_id='%s' "+
+		"ORDER BY comics.updated_at DESC;",
 		readerID)
 
 	rows, err := u.db.Query(q)
