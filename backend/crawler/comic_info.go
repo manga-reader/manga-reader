@@ -52,7 +52,6 @@ func GetComicInfo(id string) (string, string, *time.Time, error) {
 	if err != nil {
 		return "", "", nil, fmt.Errorf("failed to parse updated at time: %s: %w", updatedAtRaw, err)
 	}
-	fmt.Println("t: ", t)
 
 	return nameRaws[0], latestChapterRaws[0], &t, nil
 }

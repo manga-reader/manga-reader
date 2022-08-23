@@ -14,7 +14,15 @@ import (
 
 func RecordNew(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID, vol := getRecordNewQueryParams(c)
+		comicID, vol, err := getRecordNewQueryParams(c)
+		if err != nil {
+			err = fmt.Errorf("given query params are wrong: %w", err)
+			logrus.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"err": err.Error(),
+			})
+			return
+		}
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
@@ -29,12 +37,14 @@ func RecordNew(u *usecases.Usecase) gin.HandlerFunc {
 		if err != nil {
 			logrus.Errorf("can't get comic info of %s in RecordNew(): %s", comicID, err)
 			c.JSON(http.StatusBadRequest, gin.H{"err": fmt.Sprintf("can't get comic info of %s in RecordNew(): %s", comicID, err)})
+			return
 		}
 
 		err = u.AddComic(comicID, name, latestVol, updatedAt)
 		if err != nil {
 			logrus.Errorf("can't add new comic of %s in RecordNew(): %s", comicID, err)
 			c.JSON(http.StatusBadRequest, gin.H{"err": fmt.Sprintf("can't add new comic of %s in RecordNew(): %s", comicID, err)})
+			return
 		}
 
 		err = u.RecordSave(usecases.Website_8comic, jwt.UserID, comicID, vol, 0)
@@ -43,23 +53,22 @@ func RecordNew(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to save record",
 			})
+			return
 		}
 		c.String(http.StatusOK, handler.ResponseOK)
 	}
 }
 
-func getRecordNewQueryParams(c *gin.Context) (string, string) {
+func getRecordNewQueryParams(c *gin.Context) (string, string, error) {
 	if c.Query(handler.HeaderComicID) == "" {
-		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
+		return "", "", fmt.Errorf("comic id is not given")
 	}
 	if c.Query(handler.HeaderVolume) == "" {
-		logrus.Errorf("volume is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "volume is not given"})
+		return "", "", fmt.Errorf("volume is not given")
 	}
 
 	comicID := c.Query(handler.HeaderComicID)
 	vol := c.Query(handler.HeaderVolume)
 
-	return comicID, vol
+	return comicID, vol, nil
 }

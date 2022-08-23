@@ -15,7 +15,6 @@ import (
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
 	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -36,8 +35,8 @@ func Test_HealthPing(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/health/ping", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "pong", w.Body.String())
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, "pong", w.Body.String())
 }
 
 func Test_UserLogin(t *testing.T) {
@@ -52,11 +51,11 @@ func Test_UserLogin(t *testing.T) {
 	req.URL.RawQuery = q.Encode()
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, http.StatusOK, w.Code)
 	var res user.UserLoginRes
 	err := json.Unmarshal(w.Body.Bytes(), &res)
-	assert.NoError(t, err)
-	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
+	require.NoError(t, err)
+	require.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
 }
 
 func Test_RecordSaveAndLoad(t *testing.T) {
@@ -76,8 +75,8 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	)
 
 	wNew := httptest.NewRecorder()
-	comicID := "7"
-	vol := "10"
+	comicID := "131"
+	vol := "90話"
 
 	reqNew, _ := http.NewRequest("GET", "/record/new", nil)
 	q := reqNew.URL.Query()
@@ -87,12 +86,11 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	reqNew.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(wNew, reqNew)
 
-	assert.Equal(t, http.StatusOK, wNew.Code)
-	assert.Equal(t, handler.ResponseOK, wNew.Body.String())
+	require.Equal(t, http.StatusOK, wNew.Code)
+	require.Equal(t, handler.ResponseOK, wNew.Body.String())
 
 	wSave := httptest.NewRecorder()
-	comicID = "7"
-	vol = "11"
+	vol = "96話"
 	page := 3
 
 	reqSave, _ := http.NewRequest("GET", "/record/save", nil)
@@ -104,8 +102,8 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	reqSave.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(wSave, reqSave)
 
-	assert.Equal(t, http.StatusOK, wSave.Code)
-	assert.Equal(t, handler.ResponseOK, wSave.Body.String())
+	require.Equal(t, http.StatusOK, wSave.Code)
+	require.Equal(t, handler.ResponseOK, wSave.Body.String())
 
 	wLoad := httptest.NewRecorder()
 	reqLoad, _ := http.NewRequest("GET", "/record/load", nil)
@@ -118,9 +116,9 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	var recordLoadRes record.RecordLoadRes
 	err = json.Unmarshal(wLoad.Body.Bytes(), &recordLoadRes)
 	require.NoError(t, err)
-	assert.Equal(t, http.StatusOK, wLoad.Code)
-	assert.Equal(t, vol, recordLoadRes.Volume)
-	assert.Equal(t, page, recordLoadRes.Page)
+	require.Equal(t, http.StatusOK, wLoad.Code)
+	require.Equal(t, vol, recordLoadRes.Volume)
+	require.Equal(t, page, recordLoadRes.Page)
 }
 
 func Test_FavoriteAddGetDel(t *testing.T) {
