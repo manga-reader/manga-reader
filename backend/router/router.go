@@ -6,14 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
 	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 )
 
 type Params struct {
-	Database *database.Database
+	Usecase *usecases.Usecase
 }
 
 // SetupRouter Create a new router object
@@ -50,16 +50,16 @@ func SetupRouter(params *Params) *gin.Engine {
 	userRoute := r.Group("/user")
 	{
 		userRoute.GET("/login", user.UserLogin)
-		userRoute.GET("/favorite", user.UserGetFavorite(params.Database))
-		userRoute.POST("/favorite", user.UserAddFavorite(params.Database))
-		userRoute.DELETE("/favorite", user.UserDelFavorite(params.Database))
-		userRoute.GET("/history", user.UserGetHistory(params.Database))
+		userRoute.GET("/favorite", user.UserGetFavorite(params.Usecase))
+		userRoute.POST("/favorite", user.UserAddFavorite(params.Usecase))
+		userRoute.DELETE("/favorite", user.UserDelFavorite(params.Usecase))
+		userRoute.GET("/history", user.UserGetHistory(params.Usecase))
 	}
 
 	recordRoute := r.Group("/record").Use(middlewareCheckJWTToken)
 	{
-		recordRoute.GET("/save", record.RecordSave(params.Database))
-		recordRoute.GET("/load", record.RecordLoad(params.Database))
+		recordRoute.GET("/save", record.RecordSave(params.Usecase))
+		recordRoute.GET("/load", record.RecordLoad(params.Usecase))
 	}
 
 	return r

@@ -17,7 +17,9 @@ func Test_Login(t *testing.T) {
 	)
 	err := d.Connect()
 	require.NoError(t, err)
-	reader, err := Login(d, "john")
+	u := NewUsecase(d)
+	require.NotNil(t, u)
+	reader, err := u.Login("john")
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 }

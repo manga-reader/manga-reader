@@ -9,6 +9,7 @@ import (
 	"github.com/manga-reader/manga-reader/backend/config"
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,10 +47,11 @@ func main() {
 	if err = db.Connect(); err != nil {
 		logrus.Fatal("failed to init db")
 	}
+	u := usecases.NewUsecase(db)
 
 	r := router.SetupRouter(
 		&router.Params{
-			Database: db,
+			Usecase: u,
 		},
 	)
 	logrus.Info("START LISTENING...")

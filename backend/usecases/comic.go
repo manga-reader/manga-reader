@@ -12,7 +12,7 @@ type ComicInfo struct {
 	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 }
 
-func (r *Reader) AddComic(comicID, name, latestVolume string, updatedAt *time.Time) error {
+func (u *Usecase) AddComic(comicID, name, latestVolume string, updatedAt *time.Time) error {
 	t := updatedAt.Format(time.RFC3339)
 	cmd := fmt.Sprintf(`INSERT INTO 
 	comics (
@@ -26,16 +26,16 @@ func (r *Reader) AddComic(comicID, name, latestVolume string, updatedAt *time.Ti
     	SELECT 1 FROM comics WHERE id='%s'
 	);`,
 		comicID, name, latestVolume, t, comicID)
-	return r.db.Insert(cmd)
+	return u.db.Insert(cmd)
 }
 
-func (r *Reader) GetComicByID(comicID string) (*ComicInfo, error) {
+func (u *Usecase) GetComicByID(comicID string) (*ComicInfo, error) {
 	q := fmt.Sprintf("SELECT id, name, latest_volume, updated_at "+
 		"FROM comics "+
 		"WHERE id='%s';",
 		comicID)
 
-	rows, err := r.db.Query(q)
+	rows, err := u.db.Query(q)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query cmd: '%s': %w", q, err)
 	}
@@ -55,12 +55,12 @@ func (r *Reader) GetComicByID(comicID string) (*ComicInfo, error) {
 	return &comicInfo, nil
 }
 
-func (r *Reader) UpdateComic(comicID string, latestVolume string, updatedAt *time.Time) error {
+func (u *Usecase) UpdateComic(comicID string, latestVolume string, updatedAt *time.Time) error {
 	cmd := fmt.Sprintf("UPDATE comics SET latest_volume='%s', updated_at='%s';", latestVolume, updatedAt)
-	return r.db.Exec(cmd)
+	return u.db.Exec(cmd)
 }
 
-func (r *Reader) DelComic(comicID string) error {
+func (u *Usecase) DelComic(comicID string) error {
 	cmd := fmt.Sprintf(`DELETE FROM comics WHERE id='%s';`, comicID)
-	return r.db.Exec(cmd)
+	return u.db.Exec(cmd)
 }

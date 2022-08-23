@@ -5,13 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/manga-reader/manga-reader/backend/auth"
-	"github.com/manga-reader/manga-reader/backend/database"
-	"github.com/manga-reader/manga-reader/backend/reader"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
 )
 
-func UserGetFavorite(db *database.Database) gin.HandlerFunc {
+func UserGetFavorite(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
@@ -23,7 +22,7 @@ func UserGetFavorite(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		list, err := reader.GetReader(jwt.UserID, db).GetFavoriteList(db)
+		list, err := u.GetFavorites(jwt.UserID, 0, 0)
 		if err != nil {
 			logrus.Errorf("failed to get user favorite: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -35,7 +34,7 @@ func UserGetFavorite(db *database.Database) gin.HandlerFunc {
 	}
 }
 
-func UserAddFavorite(db *database.Database) gin.HandlerFunc {
+func UserAddFavorite(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID := geUserAddFavoriteQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
@@ -48,7 +47,7 @@ func UserAddFavorite(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		err = reader.GetReader(jwt.UserID, db).AddNewFavorite(db, comicID)
+		err = u.AddFavorite(jwt.UserID, comicID)
 		if err != nil {
 			logrus.Errorf("failed to add user favorite: %v: %v", comicID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -59,7 +58,7 @@ func UserAddFavorite(db *database.Database) gin.HandlerFunc {
 	}
 }
 
-func UserDelFavorite(db *database.Database) gin.HandlerFunc {
+func UserDelFavorite(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID := geUserDelFavoriteQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
@@ -72,7 +71,7 @@ func UserDelFavorite(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		err = reader.GetReader(jwt.UserID, db).DelFavorite(db, comicID)
+		err = u.DelFavorite(jwt.UserID, comicID)
 		if err != nil {
 			logrus.Errorf("failed to delete user favorite: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{

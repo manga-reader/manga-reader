@@ -2,11 +2,9 @@ package usecases
 
 import (
 	"fmt"
-
-	"github.com/manga-reader/manga-reader/backend/database"
 )
 
-func Login(db *database.Database, name string) (*Reader, error) {
+func (u *Usecase) Login(name string) (*Reader, error) {
 	cmd := fmt.Sprintf(`INSERT INTO 
 	readers (
 		id, 
@@ -16,12 +14,11 @@ func Login(db *database.Database, name string) (*Reader, error) {
 	WHERE NOT EXISTS (
     	SELECT 1 FROM readers WHERE id='%s'
 	);`, name, name)
-	err := db.Insert(cmd)
+	err := u.db.Insert(cmd)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to add new reader: %s: %w", name, err)
 	}
 	return &Reader{
 		ID: name,
-		db: db,
 	}, nil
 }

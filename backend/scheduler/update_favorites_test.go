@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestUpdateFavoriteOrder(t *testing.T) {
+func TestUpdateFavorites(t *testing.T) {
 	testUserID := "test_user_id"
 	keyFavorite := fmt.Sprintf("%s:favorite", testUserID)
 	db := database.NewDatabase(
@@ -78,7 +78,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	err = UpdateFavoriteOrder(db, testUserID)
+	err = UpdateFavorites(db, testUserID)
 	require.NoError(t, err)
 
 	updatedIDs, err := db.ListRangeAll(keyFavorite)
