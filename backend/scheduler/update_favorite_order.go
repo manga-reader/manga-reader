@@ -7,6 +7,7 @@ import (
 
 	"github.com/manga-reader/manga-reader/backend/crawler"
 	"github.com/manga-reader/manga-reader/backend/database"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 )
 
 func UpdateFavoriteOrder(db *database.Database, userID string) error {
@@ -15,7 +16,7 @@ func UpdateFavoriteOrder(db *database.Database, userID string) error {
 		return fmt.Errorf("err in calling getFavoriteComicIDs: %w", err)
 	}
 
-	favoriteComicInfos := make([]*database.ComicInfo, len(ids))
+	favoriteComicInfos := make([]*usecases.ComicInfo, len(ids))
 	for i, id := range ids {
 		_, latestVol, updatedAt, err := crawler.GetComicInfo(ids[i])
 		if err != nil {
@@ -77,13 +78,13 @@ func getFavoriteComicIDs(db *database.Database, userID string) ([]string, error)
 	return ids, nil
 }
 
-func getComicInfoByComicID(db *database.Database, id string) (*database.ComicInfo, error) {
+func getComicInfoByComicID(db *database.Database, id string) (*usecases.ComicInfo, error) {
 	rawComicInfo, err := db.Get(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get comic info of id %s: %w", id, err)
 	}
 
-	var info database.ComicInfo
+	var info usecases.ComicInfo
 	err = json.Unmarshal([]byte(rawComicInfo), &info)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal raw comic info: %s: %w", info, err)

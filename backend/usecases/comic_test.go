@@ -1,4 +1,4 @@
-package reader
+package usecases
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_FavoriteAddGetDel(t *testing.T) {
+func Test_AddComic(t *testing.T) {
 	d := database.NewDatabase(
 		database.Default_Host,
 		database.Default_Port,
@@ -24,19 +24,17 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	testComicID := "123"
 	testName := "test_comic_name"
 	testLatestVol := "43"
-	err = reader.AddComic(testComicID, testName, testLatestVol, time.Now())
+	testUpdatedAt := time.Now()
+	err = reader.AddComic(testComicID, testName, testLatestVol, &testUpdatedAt)
 	require.NoError(t, err)
-	err = reader.AddFavorite(testComicID)
+	comicInfo, err := reader.GetComicByID(testComicID)
 	require.NoError(t, err)
-	infos, err := reader.GetFavorites(0, 0)
+	require.Equal(t, testComicID, comicInfo.ID)
+	require.Equal(t, testName, comicInfo.Name)
+	require.Equal(t, testLatestVol, comicInfo.LatestVolume)
+	require.Equal(t, testUpdatedAt, comicInfo.UpdatedAt)
+	err = reader.DelComic(testComicID)
 	require.NoError(t, err)
-	require.Len(t, infos, 1)
-	require.Equal(t, testComicID, infos[0].ID)
-	require.Equal(t, testName, infos[0].Name)
-	require.Equal(t, testLatestVol, infos[0].LatestVolume)
-	err = reader.DelFavorite(testComicID)
+	_, err = reader.GetComicByID(testComicID)
 	require.NoError(t, err)
-	infos, err = reader.GetFavorites(0, 0)
-	require.NoError(t, err)
-	require.Len(t, infos, 0)
 }
