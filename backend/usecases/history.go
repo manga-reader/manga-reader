@@ -11,7 +11,8 @@ func (u *Usecase) GetHistory(readerID string, from, to int) ([]*ComicInfo, error
 	q := fmt.Sprintf("SELECT comics.id, comics.name, comics.latest_volume, comics.updated_at "+
 		"FROM history "+
 		"INNER JOIN comics ON comics.id=history.comic_id "+
-		"WHERE history.reader_id='%s';",
+		"WHERE history.reader_id='%s' "+
+		"ORDER BY history.read_at DESC;",
 		readerID)
 
 	rows, err := u.db.Query(q)
@@ -57,9 +58,10 @@ func (u *Usecase) AddHistory(readerID, comicID string) error {
 	cmd := fmt.Sprintf(`INSERT INTO 
 	history ( 
 		reader_id,
-		comic_id
+		comic_id,
+		read_at
 	)
-    SELECT '%s', '%s' 
+    SELECT '%s', '%s', NOW()
 	WHERE NOT EXISTS (
     	SELECT 1 FROM history WHERE history.reader_id='%s' AND history.comic_id='%s'
 	);`,

@@ -17,7 +17,7 @@ func (u *Usecase) RecordSave(website WebsiteType, readerID, comicID, volume stri
 	VALUES('%s', '%s', '%s', %d, NOW())
 	ON CONFLICT (reader_id, comic_id)
 	DO 
-	   UPDATE SET volume='%s', page=%d;`,
+	   UPDATE SET volume='%s', page=%d, read_at=NOW();`,
 		readerID, comicID, volume, page,
 		volume, page,
 	)

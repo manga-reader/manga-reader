@@ -242,6 +242,26 @@ func Test_HistoryGet(t *testing.T) {
 			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
 		},
 	}
+	testComicInfosRes := []*usecases.ComicInfo{
+		{
+			ID:           "131",
+			Name:         "鋼之鏈金術師",
+			LatestVolume: "108話",
+			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			ID:           "9337",
+			Name:         "食戟之靈",
+			LatestVolume: "315話",
+			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			ID:           "3654",
+			Name:         "妖精的尾巴",
+			LatestVolume: "545話 無法取代的伙伴們",
+			UpdatedAt:    time.Date(2020, time.May, 1, 0, 0, 0, 0, time.UTC),
+		},
+	}
 	db := database.NewDatabase(
 		database.Default_Host,
 		database.Default_Port,
@@ -265,6 +285,11 @@ func Test_HistoryGet(t *testing.T) {
 		&router.Params{u},
 	)
 
+	for i := range testComicInfosRes {
+		err = u.RecordSave(usecases.Website_8comic, reader.ID, testComicInfosRes[len(testComicInfosRes)-i-1].ID, "test_empty", 0)
+		require.NoError(t, err)
+	}
+
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/user/history", nil)
 	require.NoError(t, err)
@@ -275,5 +300,5 @@ func Test_HistoryGet(t *testing.T) {
 	var res []*usecases.ComicInfo
 	err = json.Unmarshal(w.Body.Bytes(), &res)
 	require.NoError(t, err)
-	require.Equal(t, testComicInfos, res)
+	require.Equal(t, testComicInfosRes, res)
 }
