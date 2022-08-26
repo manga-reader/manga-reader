@@ -1,4 +1,4 @@
-package reader
+package usecases
 
 import (
 	"testing"
@@ -17,15 +17,17 @@ func Test_RecordSaveLoad(t *testing.T) {
 	)
 	err := d.Connect()
 	require.NoError(t, err)
-	reader, err := Login(d, "john")
+	u := NewUsecase(d)
+	require.NotNil(t, u)
+	reader, err := u.Login("john")
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	testComicID := "123"
 	testVol := "47"
 	testPage := 25
-	err = reader.RecordSave(Website_8comic, testComicID, testVol, testPage)
+	err = u.RecordSave(Website_8comic, reader.ID, testComicID, testVol, testPage)
 	require.NoError(t, err)
-	vol, page, err := reader.RecordLoad(Website_8comic, testComicID)
+	vol, page, err := u.RecordLoad(Website_8comic, reader.ID, testComicID)
 	require.NoError(t, err)
 	require.Equal(t, testVol, vol)
 	require.Equal(t, testPage, page)

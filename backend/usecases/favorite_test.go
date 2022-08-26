@@ -1,4 +1,4 @@
-package reader
+package usecases
 
 import (
 	"testing"
@@ -18,25 +18,28 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	)
 	err := d.Connect()
 	require.NoError(t, err)
-	reader, err := Login(d, "john")
+	u := NewUsecase(d)
+	require.NotNil(t, u)
+	reader, err := u.Login("john")
 	require.NoError(t, err)
 	require.NotNil(t, reader)
 	testComicID := "123"
 	testName := "test_comic_name"
 	testLatestVol := "43"
-	err = reader.AddComic(testComicID, testName, testLatestVol, time.Now())
+	testUpdatedAt := time.Now()
+	err = u.AddComic(testComicID, testName, testLatestVol, &testUpdatedAt)
 	require.NoError(t, err)
-	err = reader.AddFavorite(testComicID)
+	err = u.AddFavorite(reader.ID, testComicID)
 	require.NoError(t, err)
-	infos, err := reader.GetFavorites(0, 0)
+	infos, err := u.GetFavorites(reader.ID, 0, 0)
 	require.NoError(t, err)
 	require.Len(t, infos, 1)
 	require.Equal(t, testComicID, infos[0].ID)
 	require.Equal(t, testName, infos[0].Name)
 	require.Equal(t, testLatestVol, infos[0].LatestVolume)
-	err = reader.DelFavorite(testComicID)
+	err = u.DelFavorite(reader.ID, testComicID)
 	require.NoError(t, err)
-	infos, err = reader.GetFavorites(0, 0)
+	infos, err = u.GetFavorites(reader.ID, 0, 0)
 	require.NoError(t, err)
 	require.Len(t, infos, 0)
 }

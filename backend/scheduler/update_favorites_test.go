@@ -6,34 +6,29 @@ import (
 	"testing"
 	"time"
 
-	"github.com/manga-reader/manga-reader/backend/config"
 	"github.com/manga-reader/manga-reader/backend/database"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
-	err := db.FlushAll()
-	if err != nil {
-		panic(err)
-	}
-}
-
-func TestUpdateFavoriteOrder(t *testing.T) {
+func TestUpdateFavorites(t *testing.T) {
 	testUserID := "test_user_id"
 	keyFavorite := fmt.Sprintf("%s:favorite", testUserID)
-	db := database.Connect(
-		config.Cfg.Redis.ServerAddr,
-		config.Cfg.Redis.Password,
-		config.Cfg.Redis.DBIndex,
+	db := database.NewDatabase(
+		database.Default_Host,
+		database.Default_Port,
+		database.Default_User,
+		database.Default_Password,
+		database.Default_Dbname,
 	)
-	require.NotNil(t, db)
-
-	err := db.Del(keyFavorite)
+	err := db.Connect()
 	require.NoError(t, err)
 
-	comicInfosBefore := []*database.ComicInfo{
+	err = db.Del(keyFavorite)
+	require.NoError(t, err)
+
+	comicInfosBefore := []*usecases.ComicInfo{
 		{
 			// 妖精的尾巴
 			ID:           "3654",
@@ -54,7 +49,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 		},
 	}
 
-	comicInfosAfter := []*database.ComicInfo{
+	comicInfosAfter := []*usecases.ComicInfo{
 		{
 			// 曾為我兄者
 			ID:           "19503",
@@ -83,7 +78,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	err = UpdateFavoriteOrder(db, testUserID)
+	err = UpdateFavorites(db, testUserID)
 	require.NoError(t, err)
 
 	updatedIDs, err := db.ListRangeAll(keyFavorite)
@@ -91,7 +86,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 	for i, id := range updatedIDs {
 		infoRaw, err := db.Get(id)
 		require.NoError(t, err)
-		var info database.ComicInfo
+		var info usecases.ComicInfo
 		err = json.Unmarshal([]byte(infoRaw), &info)
 		require.NoError(t, err)
 		assert.Equal(t, comicInfosAfter[i], &info)

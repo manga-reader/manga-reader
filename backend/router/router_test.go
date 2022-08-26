@@ -8,24 +8,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/manga-reader/manga-reader/backend/config"
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
 	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/manga-reader/manga-reader/backend/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
-	err := db.FlushAll()
-	if err != nil {
-		panic(err)
-	}
-}
 
 func Test_HealthPing(t *testing.T) {
 	router := router.SetupRouter(
@@ -60,7 +52,15 @@ func Test_UserLogin(t *testing.T) {
 }
 
 func Test_RecordSaveAndLoad(t *testing.T) {
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	db := database.NewDatabase(
+		database.Default_Host,
+		database.Default_Port,
+		database.Default_User,
+		database.Default_Password,
+		database.Default_Dbname,
+	)
+	err := db.Connect()
+	require.NoError(t, err)
 	router := router.SetupRouter(
 		&router.Params{db},
 	)
@@ -91,7 +91,7 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	router.ServeHTTP(wLoad, reqLoad)
 
 	var recordLoadRes record.RecordLoadRes
-	err := json.Unmarshal(wLoad.Body.Bytes(), &recordLoadRes)
+	err = json.Unmarshal(wLoad.Body.Bytes(), &recordLoadRes)
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, wLoad.Code)
 	assert.Equal(t, vol, recordLoadRes.Volume)
@@ -99,8 +99,9 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 }
 
 func Test_FavoriteAddGetDel(t *testing.T) {
+	var err error
 	testIDs := []string{"3654", "131", "9337"}
-	testComicInfos := []*database.ComicInfo{
+	testComicInfos := []*usecases.ComicInfo{
 		{
 			// 妖精的尾巴
 			ID:           "3654",
@@ -124,8 +125,15 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 		},
 	}
 	testComicInfosRes := utils.ReverseComicInfoSlice(testComicInfos)
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
-	var err error
+	db := database.NewDatabase(
+		database.Default_Host,
+		database.Default_Port,
+		database.Default_User,
+		database.Default_Password,
+		database.Default_Dbname,
+	)
+	err = db.Connect()
+	require.NoError(t, err)
 
 	router := router.SetupRouter(
 		&router.Params{db},
@@ -147,7 +155,7 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 	require.NoError(t, err)
 	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(w, req)
-	var res []*database.ComicInfo
+	var res []*usecases.ComicInfo
 	err = json.Unmarshal(w.Body.Bytes(), &res)
 	require.NoError(t, err)
 	require.Equal(t, testComicInfosRes, res)
@@ -175,7 +183,7 @@ func Test_FavoriteAddGetDel(t *testing.T) {
 
 func Test_HistoryGet(t *testing.T) {
 	testIDs := []string{"3654", "131", "9337"}
-	testComicInfos := []*database.ComicInfo{
+	testComicInfos := []*usecases.ComicInfo{
 		{
 			// 妖精的尾巴
 			ID:           "3654",
@@ -195,8 +203,16 @@ func Test_HistoryGet(t *testing.T) {
 			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
 		},
 	}
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
-	err := db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
+	db := database.NewDatabase(
+		database.Default_Host,
+		database.Default_Port,
+		database.Default_User,
+		database.Default_Password,
+		database.Default_Dbname,
+	)
+	err := db.Connect()
+	require.NoError(t, err)
+	err = db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
 	require.NoError(t, err)
 
 	for i := range testIDs {
@@ -217,7 +233,7 @@ func Test_HistoryGet(t *testing.T) {
 	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(w, req)
 
-	var res []*database.ComicInfo
+	var res []*usecases.ComicInfo
 	err = json.Unmarshal(w.Body.Bytes(), &res)
 	require.NoError(t, err)
 	require.Equal(t, testComicInfos, res)

@@ -1,10 +1,10 @@
-package reader
+package usecases
 
 import (
 	"fmt"
 )
 
-func (r *Reader) RecordSave(website WebsiteType, comicID, volume string, page int) error {
+func (u *Usecase) RecordSave(website WebsiteType, readerID, comicID, volume string, page int) error {
 	cmd := fmt.Sprintf(`INSERT INTO 
 	history (
 		reader_id, 
@@ -17,18 +17,18 @@ func (r *Reader) RecordSave(website WebsiteType, comicID, volume string, page in
 	ON CONFLICT (reader_id, comic_id)
 	DO 
 	   UPDATE SET volume='%s', page=%d;`,
-		r.ID, comicID, volume, page,
+		readerID, comicID, volume, page,
 		volume, page,
 	)
-	return r.db.Exec(cmd)
+	return u.db.Exec(cmd)
 }
 
-func (r *Reader) RecordLoad(website WebsiteType, comicID string) (string, int, error) {
+func (u *Usecase) RecordLoad(website WebsiteType, readerID, comicID string) (string, int, error) {
 	q := fmt.Sprintf("SELECT history.volume, history.page "+
 		"FROM history "+
 		"WHERE history.reader_id='%s';",
-		r.ID)
-	rows, err := r.db.Query(q)
+		readerID)
+	rows, err := u.db.Query(q)
 	if err != nil {
 		return "", 0, fmt.Errorf("failed to query: '%s': %w", q, err)
 	}

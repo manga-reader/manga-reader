@@ -1,17 +1,18 @@
 package record
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/manga-reader/manga-reader/backend/auth"
-	"github.com/manga-reader/manga-reader/backend/database"
-	"github.com/manga-reader/manga-reader/backend/reader"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
 )
 
-func RecordSave(db *database.Database) gin.HandlerFunc {
+func RecordSave(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID, vol, page := getRecordSaveQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
@@ -24,8 +25,7 @@ func RecordSave(db *database.Database) gin.HandlerFunc {
 			})
 		}
 
-		r := reader.GetReader(jwt.UserID, db)
-		err = r.RecordSave(reader.Website_8comic, comicID, vol, page)
+		err = u.RecordSave(usecases.Website_8comic, jwt.UserID, comicID, vol, page)
 		if err != nil {
 			logrus.Errorf("failed to save record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
@@ -36,7 +36,7 @@ func RecordSave(db *database.Database) gin.HandlerFunc {
 	}
 }
 
-func getRecordSaveQueryParams(c *gin.Context) (string, string, string) {
+func getRecordSaveQueryParams(c *gin.Context) (string, string, int) {
 	if c.Query(handler.HeaderComicID) == "" {
 		logrus.Errorf("comic id is not given")
 		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
@@ -51,6 +51,11 @@ func getRecordSaveQueryParams(c *gin.Context) (string, string, string) {
 	}
 	comicID := c.Query(handler.HeaderComicID)
 	vol := c.Query(handler.HeaderVolume)
-	page := c.Query(handler.HeaderPage)
+	pageRaw := c.Query(handler.HeaderPage)
+	page, err := strconv.Atoi(pageRaw)
+	if err != nil {
+		logrus.Errorf("page: '%s' is not a number", pageRaw)
+		c.JSON(http.StatusBadRequest, gin.H{"err": fmt.Sprintf("page: '%s' is not a number", pageRaw)})
+	}
 	return comicID, vol, page
 }

@@ -5,9 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/manga-reader/manga-reader/backend/auth"
-	"github.com/manga-reader/manga-reader/backend/database"
-	"github.com/manga-reader/manga-reader/backend/reader"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
+	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +16,7 @@ type RecordLoadRes struct {
 	Msg    string `json:"msg,omitempty"`
 }
 
-func RecordLoad(db *database.Database) gin.HandlerFunc {
+func RecordLoad(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID := getRecordLoadQueryParams(c)
 		userToken := c.GetHeader(handler.HeaderJWTToken)
@@ -31,7 +30,7 @@ func RecordLoad(db *database.Database) gin.HandlerFunc {
 		}
 
 		var res RecordLoadRes
-		res.Volume, res.Page, err = reader.GetReader(jwt.UserID, db).RecordLoad(reader.Website_8comic, comicID)
+		res.Volume, res.Page, err = u.RecordLoad(usecases.Website_8comic, jwt.UserID, comicID)
 		if err != nil {
 			logrus.Errorf("failed to Load record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
