@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/manga-reader/manga-reader/backend/auth"
+	"github.com/manga-reader/manga-reader/backend/router/auth"
 	"github.com/manga-reader/manga-reader/backend/router/handler"
 	"github.com/manga-reader/manga-reader/backend/usecases"
 	"github.com/sirupsen/logrus"
@@ -32,7 +32,7 @@ func RecordLoad(u *usecases.Usecase) gin.HandlerFunc {
 		var res RecordLoadRes
 		res.Volume, res.Page, err = u.RecordLoad(usecases.Website_8comic, jwt.UserID, comicID)
 		if err != nil {
-			logrus.Errorf("failed to Load record: %v", err)
+			logrus.Errorf("failed to Load record: %s", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to Load record",
 			})

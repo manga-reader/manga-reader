@@ -3,7 +3,7 @@ package auth_test
 import (
 	"testing"
 
-	"github.com/manga-reader/manga-reader/backend/auth"
+	"github.com/manga-reader/manga-reader/backend/router/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
