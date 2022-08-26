@@ -17,7 +17,7 @@ func UpdateFavoriteOrder(db *database.Database, userID string) error {
 
 	favoriteComicInfos := make([]*database.ComicInfo, len(ids))
 	for i, id := range ids {
-		latestVol, updatedAt, err := crawler.GetPageLatestVolumeAndDate(ids[i])
+		_, latestVol, updatedAt, err := crawler.GetComicInfo(ids[i])
 		if err != nil {
 			return fmt.Errorf("failed to get latest volume of comic: %v: %w", id, err)
 		}

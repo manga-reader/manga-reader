@@ -1,64 +1,77 @@
 package reader
 
-// func (r *Reader) GetHistoryList(db *database.Database) ([]database.ComicInfo, error) {
-// 	historyIDs, err := db.ListRangeAll(database.GetUserHistoryKey(r.ID))
-// 	if err != nil {
-// 		return nil, fmt.Errorf("can't get user %s's history list: %w", r.ID, err)
-// 	}
+import (
+	"fmt"
 
-// 	res := make([]database.ComicInfo, len(historyIDs))
-// 	for i, historyID := range historyIDs {
-// 		infoRaw, err := db.Get(historyID)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("can't get history comic: %s info: %w", historyID, err)
-// 		}
+	"github.com/manga-reader/manga-reader/backend/crawler"
+	"github.com/manga-reader/manga-reader/backend/database"
+	"github.com/manga-reader/manga-reader/backend/utils"
+)
 
-// 		var tmp database.ComicInfo
-// 		err = json.Unmarshal([]byte(infoRaw), &tmp)
-// 		if err != nil {
-// 			return nil, fmt.Errorf("can't unmarshal raw message '%s' : %w", infoRaw, err)
-// 		}
-// 		res[i] = tmp
-// 	}
+func (r *Reader) GetHistory(from, to int) ([]*database.ComicInfo, error) {
+	q := fmt.Sprintf("SELECT comics.id, comics.name, comics.latest_volume, comics.updated_at "+
+		"FROM history "+
+		"INNER JOIN comics ON comics.id=history.comic_id "+
+		"WHERE history.reader_id='%s';",
+		r.ID)
 
-// 	return res, nil
-// }
+	rows, err := r.db.Query(q)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query cmd: '%s': %w", q, err)
+	}
+	defer rows.Close()
 
-// func (r *Reader) AddNewHistory(db *database.Database, comicID string) error {
-// 	comicName, err := crawler.GetComicName(comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("can't get comic %s's name: %w", comicID, err)
-// 	}
+	var comicInfos []*database.ComicInfo
+	for rows.Next() {
+		var comicInfo database.ComicInfo
+		err := rows.Scan(&comicInfo.ID, &comicInfo.Name, &comicInfo.LatestVolume, &comicInfo.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan response of query '%s': %w", q, err)
+		}
+		comicInfos = append(comicInfos, &comicInfo)
+	}
 
-// 	latestVol, updatedAt, err := crawler.GetPageLatestVolumeAndDate(comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to get latest volume of comic: %v: %w", comicID, err)
-// 	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to get response of query '%s': %w", q, err)
+	}
 
-// 	err = db.ListPush(database.GetUserHistoryKey(r.ID), []string{comicID})
-// 	if err != nil {
-// 		return fmt.Errorf("failed to add comic id: %v to user history list: %w", comicID, err)
-// 	}
+	return comicInfos, nil
+}
 
-// 	info := database.ComicInfo{
-// 		ID:           comicID,
-// 		Name:         comicName,
-// 		LatestVolume: latestVol,
-// 		UpdatedAt:    *updatedAt,
-// 	}
-// 	b, err := json.Marshal(&info)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to marshal comic info: %v to update: %w", info, err)
-// 	}
+func (r *Reader) AddHistory(comicID string) error {
+	var err error
+	q := fmt.Sprintf("SELECT id FROM comics WHERE comics.id='%s';", comicID)
+	err = r.db.IsExist(q)
+	if err != nil && err != utils.ErrNotFound {
+		return fmt.Errorf("failed to find whether a note exist: %w", err)
+	}
+	if err == utils.ErrNotFound {
+		name, latestVol, updatedAt, err := crawler.GetComicInfo(comicID)
+		if err != nil && err != utils.ErrNotFound {
+			return fmt.Errorf("failed to get comic info of %s by crawler: %w", comicID, err)
+		}
+		err = r.AddComic(comicID, name, latestVol, *updatedAt)
+		if err != nil && err != utils.ErrNotFound {
+			return fmt.Errorf("failed to add comic with comic_id: %s, name: %s, latest volume: %s, updated at: %s: %w", comicID, name, latestVol, updatedAt, err)
+		}
+	}
+	cmd := fmt.Sprintf(`INSERT INTO 
+	history ( 
+		reader_id,
+		comic_id
+	)
+    SELECT '%s', '%s' 
+	WHERE NOT EXISTS (
+    	SELECT 1 FROM history WHERE history.reader_id='%s' AND history.comic_id='%s'
+	);`,
+		r.ID, comicID,
+		r.ID, comicID)
+	return r.db.Exec(cmd)
+}
 
-// 	return db.Set(comicID, b)
-// }
-
-// func (r *Reader) DelHistory(db *database.Database, comicID string) error {
-// 	err := db.ListRemoveElement(database.GetUserHistoryKey(r.ID), comicID)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to remove comic id: %s from user: %s: %w", comicID, r.ID, err)
-// 	}
-
-// 	return nil
-// }
+func (r *Reader) DelHistory(comicID string) error {
+	cmd := fmt.Sprintf(`DELETE FROM history
+	WHERE history.reader_id='%s' AND history.comic_id='%s';`,
+		r.ID, comicID)
+	return r.db.Exec(cmd)
+}
