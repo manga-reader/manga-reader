@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/manga-reader/manga-reader/backend/config"
 	"github.com/manga-reader/manga-reader/backend/database"
@@ -13,9 +14,18 @@ import (
 	"github.com/manga-reader/manga-reader/backend/router/handler"
 	"github.com/manga-reader/manga-reader/backend/router/handler/record"
 	"github.com/manga-reader/manga-reader/backend/router/handler/user"
+	"github.com/manga-reader/manga-reader/backend/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	err := db.FlushAll()
+	if err != nil {
+		panic(err)
+	}
+}
 
 func Test_HealthPing(t *testing.T) {
 	router := router.SetupRouter(
@@ -86,9 +96,57 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 	assert.Equal(t, http.StatusOK, wLoad.Code)
 	assert.Equal(t, vol, recordLoadRes.Volume)
 	assert.Equal(t, page, recordLoadRes.Page)
-
 }
 
 func Test_FavoriteAddGetDel(t *testing.T) {
 	// TODO add it
+}
+
+func Test_HistoryGet(t *testing.T) {
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	router := router.SetupRouter(
+		&router.Params{db},
+	)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/user/history", nil)
+
+	testIDs := []string{"123", "456", "789"}
+	err := db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
+	testComicInfos := []*database.ComicInfo{
+		{
+			// 妖精的尾巴
+			ID:           "3654",
+			LatestVolume: "540話",
+			UpdatedAt:    time.Date(2017, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			// 鋼之鏈金術師
+			ID:           "131",
+			LatestVolume: "20卷",
+			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			// 曾為我兄者
+			ID:           "19503",
+			LatestVolume: "01",
+			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+	}
+	for i := range testIDs {
+		b, err := json.Marshal(testComicInfos[i])
+		require.NoError(t, err)
+		fmt.Println("i: ", i)
+		fmt.Printf("testIDs[i]: %s, string(b): %s\n", testIDs[i], string(b))
+		err = db.Set(testIDs[i], string(b))
+		require.NoError(t, err)
+	}
+	require.NoError(t, err)
+	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(w, req)
+
+	var res []*database.ComicInfo
+	err = json.Unmarshal(w.Body.Bytes(), &res)
+	require.NoError(t, err)
+	require.Equal(t, testComicInfos, res)
 }
