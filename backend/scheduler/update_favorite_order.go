@@ -60,7 +60,7 @@ func UpdateFavoriteOrder(db *database.Database, userID string) error {
 		if err != nil {
 			return fmt.Errorf("failed to marshal comic info: %v to update: %w", info, err)
 		}
-		err = db.Set(info.ID, string(b))
+		err = db.Set(info.ID, b)
 		if err != nil {
 			return fmt.Errorf("failed to update new comic info: %v: %w", info, err)
 		}

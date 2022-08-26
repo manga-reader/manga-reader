@@ -99,20 +99,11 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 }
 
 func Test_FavoriteAddGetDel(t *testing.T) {
-	// TODO add it
+	// TODO
 }
 
 func Test_HistoryGet(t *testing.T) {
-	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
-	router := router.SetupRouter(
-		&router.Params{db},
-	)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/user/history", nil)
-
 	testIDs := []string{"123", "456", "789"}
-	err := db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
 	testComicInfos := []*database.ComicInfo{
 		{
 			// 妖精的尾巴
@@ -133,15 +124,25 @@ func Test_HistoryGet(t *testing.T) {
 			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
 		},
 	}
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	err := db.ListPush(database.GetUserHistoryKey("john"), utils.ReverseStringSlice(testIDs))
+	require.NoError(t, err)
+
 	for i := range testIDs {
 		b, err := json.Marshal(testComicInfos[i])
 		require.NoError(t, err)
-		fmt.Println("i: ", i)
-		fmt.Printf("testIDs[i]: %s, string(b): %s\n", testIDs[i], string(b))
-		err = db.Set(testIDs[i], string(b))
+		err = db.Set(testIDs[i], b)
 		require.NoError(t, err)
 	}
+
+	router := router.SetupRouter(
+		&router.Params{db},
+	)
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/user/history", nil)
 	require.NoError(t, err)
+
 	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
 	router.ServeHTTP(w, req)
 

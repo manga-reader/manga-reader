@@ -59,7 +59,7 @@ func (r *Reader) AddNewFavorite(db *database.Database, comicID string) error {
 		return fmt.Errorf("failed to marshal comic info: %v to update: %w", info, err)
 	}
 
-	return db.Set(comicID, string(b))
+	return db.Set(comicID, b)
 }
 
 func (r *Reader) DelFavorite(db *database.Database, comicID string) error {

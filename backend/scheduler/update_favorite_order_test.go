@@ -12,6 +12,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	err := db.FlushAll()
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestUpdateFavoriteOrder(t *testing.T) {
 	testUserID := "test_user_id"
 	keyFavorite := fmt.Sprintf("%s:favorite", testUserID)
@@ -51,7 +59,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 			// 曾為我兄者
 			ID:           "19503",
 			LatestVolume: "09.5",
-			UpdatedAt:    time.Date(2022, time.June, 29, 0, 0, 0, 0, time.UTC),
+			UpdatedAt:    time.Date(2022, time.August, 18, 0, 0, 0, 0, time.UTC),
 		},
 		{
 			// 妖精的尾巴
@@ -71,7 +79,7 @@ func TestUpdateFavoriteOrder(t *testing.T) {
 		require.NoError(t, err)
 		err = db.ListPush(keyFavorite, []string{info.ID})
 		require.NoError(t, err)
-		err = db.Set(info.ID, string(infoByte))
+		err = db.Set(info.ID, infoByte)
 		require.NoError(t, err)
 	}
 
