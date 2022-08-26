@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 
 	"github.com/manga-reader/manga-reader/backend/database"
 	"github.com/manga-reader/manga-reader/backend/router/handler/health"
@@ -35,6 +36,12 @@ func SetupRouter(params *Params) *gin.Engine {
 	}
 	r.Use(corsMiddleware)
 
+	// show the called path
+	r.Use(func(c *gin.Context) {
+		logrus.Info("calling ", c.Request.URL)
+		c.Next()
+	})
+
 	healthRoute := r.Group("/health")
 	{
 		healthRoute.GET("/ping", health.HealthPing)
@@ -43,7 +50,9 @@ func SetupRouter(params *Params) *gin.Engine {
 	userRoute := r.Group("/user")
 	{
 		userRoute.GET("/login", user.UserLogin)
-		userRoute.GET("/favorite", user.UserFavorite(params.Database))
+		userRoute.GET("/favorite", user.UserGetFavorite(params.Database))
+		userRoute.POST("/favorite", user.UserAddFavorite(params.Database))
+		userRoute.DELETE("/favorite", user.UserDelFavorite(params.Database))
 	}
 
 	recordRoute := r.Group("/record").Use(middlewareCheckJWTToken)

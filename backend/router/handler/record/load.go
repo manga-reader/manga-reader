@@ -26,7 +26,7 @@ func RecordLoad(db *database.Database) gin.HandlerFunc {
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to decode JWT",
+				"err": "failed to decode JWT",
 			})
 		}
 
@@ -35,7 +35,7 @@ func RecordLoad(db *database.Database) gin.HandlerFunc {
 		if err != nil {
 			logrus.Errorf("failed to Load record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to Load record",
+				"err": "failed to Load record",
 			})
 		}
 		c.JSON(http.StatusOK, res)
@@ -45,7 +45,7 @@ func RecordLoad(db *database.Database) gin.HandlerFunc {
 func getRecordLoadQueryParams(c *gin.Context) string {
 	if c.Query(handler.HeaderComicID) == "" {
 		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "comic id is not given"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
 	}
 
 	comicID := c.Query(handler.HeaderComicID)

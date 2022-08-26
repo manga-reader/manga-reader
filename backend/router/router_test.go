@@ -49,7 +49,7 @@ func Test_UserLogin(t *testing.T) {
 	assert.Equal(t, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM", res.Token)
 }
 
-func Test_recordSaveAndLoad(t *testing.T) {
+func Test_RecordSaveAndLoad(t *testing.T) {
 	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
 	router := router.SetupRouter(
 		&router.Params{db},
@@ -87,4 +87,8 @@ func Test_recordSaveAndLoad(t *testing.T) {
 	assert.Equal(t, vol, recordLoadRes.Volume)
 	assert.Equal(t, page, recordLoadRes.Page)
 
+}
+
+func Test_FavoriteAddGetDel(t *testing.T) {
+	// TODO add it
 }

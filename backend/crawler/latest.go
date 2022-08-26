@@ -24,6 +24,7 @@ func GetPageLatestVolumeAndDate(id string) (string, *time.Time, error) {
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to read response body: %w", err)
 	}
+
 	latestChapterTag := "id=lch>"
 	latestChapterRaws := strings.Split(string(html), latestChapterTag)
 	latestChapterRaws = strings.Split(latestChapterRaws[1], "</font>")

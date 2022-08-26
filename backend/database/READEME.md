@@ -5,4 +5,4 @@ ranked by the latest updated one to the least updated one
 
 `<user_id>:<website>:<comic_id>`: `<vol>:<page>`
 
-`<comic_id>`: `{"latest_volume": <latest_volume>, "updated_at": <timestamp>}`
+`<comic_id>`: `{"id": <comic_id>, "name": <comic_name>, "latest_volume": <latest_volume>, "updated_at": <timestamp>}`

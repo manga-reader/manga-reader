@@ -20,7 +20,7 @@ func RecordSave(db *database.Database) gin.HandlerFunc {
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to decode JWT",
+				"err": "failed to decode JWT",
 			})
 		}
 
@@ -29,7 +29,7 @@ func RecordSave(db *database.Database) gin.HandlerFunc {
 		if err != nil {
 			logrus.Errorf("failed to save record: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "failed to save record",
+				"err": "failed to save record",
 			})
 		}
 		c.String(http.StatusOK, handler.ResponseOK)
@@ -39,15 +39,15 @@ func RecordSave(db *database.Database) gin.HandlerFunc {
 func getRecordSaveQueryParams(c *gin.Context) (string, string, string) {
 	if c.Query(handler.HeaderComicID) == "" {
 		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "comic id is not given"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
 	}
 	if c.Query(handler.HeaderVolume) == "" {
 		logrus.Errorf("volume is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "volume is not given"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "volume is not given"})
 	}
 	if c.Query(handler.HeaderPage) == "" {
 		logrus.Errorf("page is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"msg": "page is not given"})
+		c.JSON(http.StatusBadRequest, gin.H{"err": "page is not given"})
 	}
 	comicID := c.Query(handler.HeaderComicID)
 	vol := c.Query(handler.HeaderVolume)
