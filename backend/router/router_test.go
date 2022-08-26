@@ -99,11 +99,82 @@ func Test_RecordSaveAndLoad(t *testing.T) {
 }
 
 func Test_FavoriteAddGetDel(t *testing.T) {
-	// TODO
+	testIDs := []string{"3654", "131", "9337"}
+	testComicInfos := []*database.ComicInfo{
+		{
+			// 妖精的尾巴
+			ID:           "3654",
+			Name:         "妖精的尾巴",
+			LatestVolume: "545話 無法取代的伙伴們",
+			UpdatedAt:    time.Date(2020, time.May, 01, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			// 鋼之鏈金術師
+			ID:           "131",
+			Name:         "鋼之鏈金術師",
+			LatestVolume: "108話",
+			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+		},
+		{
+			// 食戟之靈
+			ID:           "9337",
+			Name:         "食戟之靈",
+			LatestVolume: "315話",
+			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
+		},
+	}
+	testComicInfosRes := utils.ReverseComicInfoSlice(testComicInfos)
+	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)
+	var err error
+
+	router := router.SetupRouter(
+		&router.Params{db},
+	)
+
+	for i := range testIDs {
+		w := httptest.NewRecorder()
+		req, err := http.NewRequest("POST", "/user/favorite", nil)
+		require.NoError(t, err)
+		q := req.URL.Query()
+		q.Add(handler.HeaderComicID, testIDs[i])
+		req.URL.RawQuery = q.Encode()
+		req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+		router.ServeHTTP(w, req)
+	}
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/user/favorite", nil)
+	require.NoError(t, err)
+	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(w, req)
+	var res []*database.ComicInfo
+	err = json.Unmarshal(w.Body.Bytes(), &res)
+	require.NoError(t, err)
+	require.Equal(t, testComicInfosRes, res)
+
+	w = httptest.NewRecorder()
+	req, err = http.NewRequest("DELETE", "/user/favorite", nil)
+	require.NoError(t, err)
+	q := req.URL.Query()
+	q.Add(handler.HeaderComicID, testIDs[0])
+	req.URL.RawQuery = q.Encode()
+	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(w, req)
+
+	w = httptest.NewRecorder()
+	req, err = http.NewRequest("GET", "/user/favorite", nil)
+	require.NoError(t, err)
+	req.Header.Add("token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImpvaG4ifQ.N3sjQ9IX8ipYMA9bxT4PyvSTRYLIKFwvkYu-hnNVqvM")
+	router.ServeHTTP(w, req)
+	err = json.Unmarshal(w.Body.Bytes(), &res)
+	require.NoError(t, err)
+	for i := range res {
+		require.Equal(t, testComicInfosRes[i], res[i])
+	}
 }
 
 func Test_HistoryGet(t *testing.T) {
-	testIDs := []string{"123", "456", "789"}
+	testIDs := []string{"3654", "131", "9337"}
 	testComicInfos := []*database.ComicInfo{
 		{
 			// 妖精的尾巴
@@ -118,10 +189,10 @@ func Test_HistoryGet(t *testing.T) {
 			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
 		},
 		{
-			// 曾為我兄者
-			ID:           "19503",
-			LatestVolume: "01",
-			UpdatedAt:    time.Date(2018, time.July, 23, 0, 0, 0, 0, time.UTC),
+			// 食戟之靈
+			ID:           "9337",
+			LatestVolume: "315話",
+			UpdatedAt:    time.Date(2020, time.May, 12, 0, 0, 0, 0, time.UTC),
 		},
 	}
 	db := database.Connect(config.Cfg.Redis.ServerAddr, config.Cfg.Redis.Password, config.Cfg.Redis.DBIndex)

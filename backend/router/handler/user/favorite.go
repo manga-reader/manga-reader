@@ -30,6 +30,7 @@ func UserGetFavorite(db *database.Database) gin.HandlerFunc {
 				"err": "failed to get user favorite",
 			})
 		}
+
 		c.JSON(http.StatusOK, list)
 	}
 }
