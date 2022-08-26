@@ -51,7 +51,6 @@ func TestDatabase_CreateTables(t *testing.T) {
 			require.NoError(t, err)
 			err = CreateTables(d)
 			require.NoError(t, err)
-
 		})
 	}
 }
