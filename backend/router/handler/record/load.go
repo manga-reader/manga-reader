@@ -1,6 +1,7 @@
 package record
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,15 +19,24 @@ type RecordLoadRes struct {
 
 func RecordLoad(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID := getRecordLoadQueryParams(c)
+		comicID, err := getRecordLoadQueryParams(c)
+		if err != nil {
+			err = fmt.Errorf("bad query param: %w", err)
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"err": err,
+			})
+			return
+		}
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		var res RecordLoadRes
@@ -36,17 +46,17 @@ func RecordLoad(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to Load record",
 			})
+			return
 		}
 		c.JSON(http.StatusOK, res)
 	}
 }
 
-func getRecordLoadQueryParams(c *gin.Context) string {
+func getRecordLoadQueryParams(c *gin.Context) (string, error) {
 	if c.Query(handler.HeaderComicID) == "" {
-		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
+		return "", fmt.Errorf("comic id is not given")
 	}
 
 	comicID := c.Query(handler.HeaderComicID)
-	return comicID
+	return comicID, nil
 }

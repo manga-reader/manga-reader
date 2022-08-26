@@ -16,9 +16,9 @@ func RecordNew(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		comicID, vol, err := getRecordNewQueryParams(c)
 		if err != nil {
-			err = fmt.Errorf("given query params are wrong: %w", err)
+			err = fmt.Errorf("bad query param: %w", err)
 			logrus.Error(err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": err.Error(),
 			})
 			return
@@ -28,9 +28,10 @@ func RecordNew(u *usecases.Usecase) gin.HandlerFunc {
 		jwt, err := auth.DecodeJWT(userToken)
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		name, latestVol, updatedAt, err := crawler.GetComicInfo(comicID)

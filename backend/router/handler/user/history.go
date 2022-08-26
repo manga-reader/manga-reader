@@ -20,6 +20,7 @@ func UserGetHistory(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		list, err := u.GetHistory(jwt.UserID, 0, 0)
@@ -28,6 +29,7 @@ func UserGetHistory(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to get user history",
 			})
+			return
 		}
 		c.JSON(http.StatusOK, list)
 	}

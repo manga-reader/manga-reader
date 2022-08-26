@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,9 +18,10 @@ func UserGetFavorite(u *usecases.Usecase) gin.HandlerFunc {
 		jwt, err := auth.DecodeJWT(userToken)
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		list, err := u.GetFavorites(jwt.UserID, 0, 0)
@@ -28,6 +30,7 @@ func UserGetFavorite(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to get user favorite",
 			})
+			return
 		}
 
 		c.JSON(http.StatusOK, list)
@@ -36,15 +39,24 @@ func UserGetFavorite(u *usecases.Usecase) gin.HandlerFunc {
 
 func UserAddFavorite(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID := geUserAddFavoriteQueryParams(c)
+		comicID, err := geUserAddFavoriteQueryParams(c)
+		if err != nil {
+			err = fmt.Errorf("bad query param: %w", err)
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"err": err,
+			})
+			return
+		}
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		err = u.AddFavorite(jwt.UserID, comicID)
@@ -53,6 +65,7 @@ func UserAddFavorite(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to add user favorite",
 			})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"msg": handler.ResponseOK})
 	}
@@ -60,15 +73,24 @@ func UserAddFavorite(u *usecases.Usecase) gin.HandlerFunc {
 
 func UserDelFavorite(u *usecases.Usecase) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		comicID := geUserDelFavoriteQueryParams(c)
+		comicID, err := geUserDelFavoriteQueryParams(c)
+		if err != nil {
+			err = fmt.Errorf("bad query param: %w", err)
+			logrus.Error(err)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"err": err,
+			})
+			return
+		}
 		userToken := c.GetHeader(handler.HeaderJWTToken)
 
 		jwt, err := auth.DecodeJWT(userToken)
 		if err != nil {
 			logrus.Errorf("failed to decode JWT: %v: %v", comicID, err)
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"err": "failed to decode JWT",
 			})
+			return
 		}
 
 		err = u.DelFavorite(jwt.UserID, comicID)
@@ -77,27 +99,26 @@ func UserDelFavorite(u *usecases.Usecase) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"err": "failed to delete user favorite",
 			})
+			return
 		}
 		c.JSON(http.StatusOK, gin.H{"msg": handler.ResponseOK})
 	}
 }
 
-func geUserAddFavoriteQueryParams(c *gin.Context) string {
+func geUserAddFavoriteQueryParams(c *gin.Context) (string, error) {
 	if c.Query(handler.HeaderComicID) == "" {
-		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
+		return "", fmt.Errorf("comic id is not given")
 	}
 
 	comicID := c.Query(handler.HeaderComicID)
-	return comicID
+	return comicID, nil
 }
 
-func geUserDelFavoriteQueryParams(c *gin.Context) string {
+func geUserDelFavoriteQueryParams(c *gin.Context) (string, error) {
 	if c.Query(handler.HeaderComicID) == "" {
-		logrus.Errorf("comic id is not given")
-		c.JSON(http.StatusBadRequest, gin.H{"err": "comic id is not given"})
+		return "", fmt.Errorf("comic id is not given")
 	}
 
 	comicID := c.Query(handler.HeaderComicID)
-	return comicID
+	return comicID, nil
 }
